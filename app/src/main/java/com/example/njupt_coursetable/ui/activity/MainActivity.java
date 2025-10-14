@@ -25,6 +25,7 @@ import com.example.njupt_coursetable.ui.adapter.ReminderAdapter;
 import com.example.njupt_coursetable.ui.dialog.CourseDialog;
 import com.example.njupt_coursetable.ui.dialog.ReminderDialog;
 import com.example.njupt_coursetable.ui.view.CourseTableView;
+import com.example.njupt_coursetable.ui.view.HalfPanel;
 import com.example.njupt_coursetable.ui.viewmodel.CourseViewModel;
 import com.example.njupt_coursetable.ui.viewmodel.ReminderViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -152,9 +153,17 @@ public class MainActivity extends AppCompatActivity {
         // 初始化课程表视图
         courseTableView = binding.courseTableView;
         courseTableView.setCurrentWeek(currentWeek);
+        
+        // 获取HalfPanel并设置给CourseTableView
+        HalfPanel halfPanel = binding.halfPanel;
+        courseTableView.setHalfPanel(halfPanel);
+        
+        // 设置课程点击监听器
         courseTableView.setOnCourseClickListener(course -> {
-            // 点击课程，编辑课程
-            showCourseDialog(course);
+            // 点击课程，显示课程详情面板
+            if (course != null) {
+                halfPanel.showCourseInfo(course);
+            }
         });
         
         // 初始化提醒列表
@@ -185,15 +194,13 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_courses) {
                 // 显示课程表视图
-                binding.courseTableView.setVisibility(View.VISIBLE);
-                binding.textEmptyCourses.setVisibility(View.GONE);
+                binding.layoutCourses.setVisibility(View.VISIBLE);
                 binding.layoutReminders.setVisibility(View.GONE);
                 binding.fab.setVisibility(View.VISIBLE);
                 return true;
             } else if (item.getItemId() == R.id.navigation_reminders) {
                 // 显示提醒列表
-                binding.courseTableView.setVisibility(View.GONE);
-                binding.textEmptyCourses.setVisibility(View.GONE);
+                binding.layoutCourses.setVisibility(View.GONE);
                 binding.layoutReminders.setVisibility(View.VISIBLE);
                 binding.fab.setVisibility(View.VISIBLE);
                 return true;
@@ -204,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
         // 设置浮动按钮
         FloatingActionButton fab = binding.fab;
         fab.setOnClickListener(view -> {
-            if (binding.courseTableView.getVisibility() == View.VISIBLE) {
+            if (binding.layoutCourses.getVisibility() == View.VISIBLE) {
                 // 添加课程
                 showCourseDialog(null);
             } else if (binding.layoutReminders.getVisibility() == View.VISIBLE) {
@@ -237,9 +244,11 @@ public class MainActivity extends AppCompatActivity {
             if (courses == null || courses.isEmpty()) {
                 binding.courseTableView.setVisibility(View.GONE);
                 binding.textEmptyCourses.setVisibility(View.VISIBLE);
+                binding.layoutCourses.setVisibility(View.GONE);
             } else {
                 binding.courseTableView.setVisibility(View.VISIBLE);
                 binding.textEmptyCourses.setVisibility(View.GONE);
+                binding.layoutCourses.setVisibility(View.VISIBLE);
             }
         });
         
@@ -251,8 +260,10 @@ public class MainActivity extends AppCompatActivity {
             // 更新空状态视图
             if (reminders == null || reminders.isEmpty()) {
                 binding.textEmptyReminders.setVisibility(View.VISIBLE);
+                binding.recyclerViewReminders.setVisibility(View.GONE);
             } else {
                 binding.textEmptyReminders.setVisibility(View.GONE);
+                binding.recyclerViewReminders.setVisibility(View.VISIBLE);
             }
         });
         
@@ -360,15 +371,6 @@ public class MainActivity extends AppCompatActivity {
             dateStrings[i] = dateFormat.format(calendar.getTime());
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
-        
-        // 设置日期显示
-        binding.dateMon.setText(dateStrings[0]);
-        binding.dateTue.setText(dateStrings[1]);
-        binding.dateWed.setText(dateStrings[2]);
-        binding.dateThu.setText(dateStrings[3]);
-        binding.dateFri.setText(dateStrings[4]);
-        binding.dateSat.setText(dateStrings[5]);
-        binding.dateSun.setText(dateStrings[6]);
         
         // 设置课程表的日期
         courseTableView.setDateStrings(dateStrings);

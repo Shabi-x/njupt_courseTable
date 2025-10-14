@@ -154,6 +154,66 @@ public class Course {
         this.reminderId = reminderId;
     }
 
+    // 添加一些便捷方法
+    public String getName() {
+        return courseName;
+    }
+    
+    public void setName(String name) {
+        this.courseName = name;
+    }
+    
+    public String getTeacher() {
+        return teacherName;
+    }
+    
+    public void setTeacher(String teacher) {
+        this.teacherName = teacher;
+    }
+    
+    public String getContact() {
+        return contactInfo;
+    }
+    
+    public void setContact(String contact) {
+        this.contactInfo = contact;
+    }
+    
+    public String getType() {
+        return property;
+    }
+    
+    public void setType(String type) {
+        this.property = type;
+    }
+    
+    public String getNote() {
+        return remarks;
+    }
+    
+    public void setNote(String note) {
+        this.remarks = note;
+    }
+    
+    public String getWeeks() {
+        return weekRange;
+    }
+    
+    public void setWeeks(String weeks) {
+        this.weekRange = weeks;
+    }
+    
+    // 添加颜色属性，用于课程表显示
+    private int color = 0xFF2196F3; // 默认蓝色
+    
+    public int getColor() {
+        return color;
+    }
+    
+    public void setColor(int color) {
+        this.color = color;
+    }
+
     @Override
     public String toString() {
         return "Course{" +

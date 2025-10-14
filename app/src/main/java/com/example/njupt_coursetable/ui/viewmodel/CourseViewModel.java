@@ -14,6 +14,7 @@ import com.example.njupt_coursetable.data.repository.CourseRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.FutureTask;
 
 /**
  * 课程视图模型类
@@ -68,15 +69,18 @@ public class CourseViewModel extends AndroidViewModel {
      */
     public List<Course> getAllCoursesSync() {
         try {
-            // 在后台线程中执行数据库查询
-            return AsyncTask.execute(() -> {
+            // 使用FutureTask在后台线程中执行数据库查询
+            FutureTask<List<Course>> futureTask = new FutureTask<>(() -> {
                 try {
                     return courseRepository.getAllCoursesSync();
                 } catch (Exception e) {
                     Log.e(TAG, "Error getting all courses synchronously", e);
                     return Collections.emptyList();
                 }
-            }).get();
+            });
+            
+            AsyncTask.execute(futureTask);
+            return futureTask.get();
         } catch (Exception e) {
             Log.e(TAG, "Error executing async task", e);
             return Collections.emptyList();

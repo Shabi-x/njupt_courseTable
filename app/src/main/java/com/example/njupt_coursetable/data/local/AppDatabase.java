@@ -20,7 +20,7 @@ import com.example.njupt_coursetable.data.model.Reminder;
  */
 @Database(
     entities = {Course.class, Reminder.class},
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters({Converters.class})
@@ -65,6 +65,18 @@ public abstract class AppDatabase extends RoomDatabase {
     }
 
     /**
+     * 数据库迁移策略
+     * 从版本1到版本2的迁移
+     */
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // 由于我们只是添加了新的方法，没有改变表结构，所以不需要执行任何SQL语句
+            // 如果将来需要修改表结构，可以在这里添加相应的SQL语句
+        }
+    };
+
+    /**
      * 构建数据库实例
      * @param context 应用上下文
      * @return AppDatabase实例
@@ -82,6 +94,8 @@ public abstract class AppDatabase extends RoomDatabase {
                 // 数据库创建时的回调，可以在这里添加初始数据
             }
         })
+        .addMigrations(MIGRATION_1_2)
+        .fallbackToDestructiveMigration() // 如果迁移失败，则重建数据库
         .build();
     }
 

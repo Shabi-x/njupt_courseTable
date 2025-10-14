@@ -13,6 +13,7 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
@@ -29,12 +30,12 @@ public class CourseTableView extends View {
     // 常量定义
     private static final int WEEK_DAYS = 7; // 一周7天
     private static final int MAX_COURSE_SLOTS = 10; // 每天最多10节课
-    private static final int TIME_SLOT_HEIGHT_DP = 80; // 每节课的高度（dp）
-    private static final int WEEK_DAY_WIDTH_DP = 120; // 每天的宽度（dp）
-    private static final int TIME_LABEL_WIDTH_DP = 80; // 时间标签的宽度（dp）
-    private static final int HEADER_HEIGHT_DP = 60; // 头部高度（dp）
+    private static final int TIME_SLOT_HEIGHT_DP = 70; // 每节课的高度（dp）- 减小高度以适应更多内容
+    private static final int WEEK_DAY_WIDTH_DP = 90; // 每天的宽度（dp）- 减小以适应屏幕
+    private static final int TIME_LABEL_WIDTH_DP = 50; // 时间标签的宽度（dp）- 减小以适应屏幕
+    private static final int HEADER_HEIGHT_DP = 50; // 头部高度（dp）- 减小高度
     private static final int BORDER_WIDTH = 1; // 边框宽度
-    private static final int PADDING_DP = 4; // 课程内部 padding
+    private static final int PADDING_DP = 2; // 课程内部 padding - 减小以适应更多内容
 
     // 颜色定义
     private static final int BACKGROUND_COLOR = Color.parseColor("#FFFFFF");
@@ -87,6 +88,10 @@ public class CourseTableView extends View {
     private Paint backgroundPaint;
     private Paint coursePaint;
     private Rect textBounds = new Rect();
+    
+    // 课程点击检测和HalfPanel
+    private Course clickedCourse;
+    private HalfPanel halfPanel;
 
     public CourseTableView(Context context) {
         super(context);
@@ -140,6 +145,9 @@ public class CourseTableView extends View {
 
         // 设置默认日期
         setDefaultDates();
+        
+        // 初始化HalfPanel
+        initHalfPanel();
     }
 
     private void setDefaultDates() {
@@ -149,12 +157,40 @@ public class CourseTableView extends View {
                 "3/24", "3/25", "3/26", "3/27", "3/28", "3/29", "3/30"
         };
     }
+    
+    private void initHalfPanel() {
+        // 不在这里初始化HalfPanel，而是在需要时通过外部初始化
+        // 这样可以避免布局嵌套问题
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = timeLabelWidth + weekDayWidth * WEEK_DAYS;
+        // 获取屏幕宽度
+        DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
+        int screenWidth = metrics.widthPixels;
+        
+        // 计算可用宽度（减去一些边距）
+        int availableWidth = screenWidth - dpToPx(8); // 左右各留4dp边距
+        
+        // 动态计算每天的宽度，确保七天都能显示
+        int calculatedWeekDayWidth = (availableWidth - timeLabelWidth) / WEEK_DAYS;
+        
+        // 如果计算出的宽度小于最小值，则使用最小值
+        int minWeekDayWidth = dpToPx(70); // 每天最小宽度70dp
+        weekDayWidth = Math.max(calculatedWeekDayWidth, minWeekDayWidth);
+        
+        // 确保总宽度不超过屏幕宽度
+        int totalWidth = timeLabelWidth + weekDayWidth * WEEK_DAYS;
+        if (totalWidth > availableWidth) {
+            // 如果总宽度超过屏幕宽度，按比例缩小每天的宽度
+            weekDayWidth = (availableWidth - timeLabelWidth) / WEEK_DAYS;
+        }
+        
+        // 计算总高度
         int height = headerHeight + timeSlotHeight * MAX_COURSE_SLOTS;
-        setMeasuredDimension(width, height);
+        
+        // 设置测量尺寸
+        setMeasuredDimension(totalWidth, height);
     }
 
     @Override
@@ -184,10 +220,15 @@ public class CourseTableView extends View {
 
         // 绘制当前周数
         backgroundPaint.setColor(CURRENT_WEEK_BG_COLOR);
-        int weekTextWidth = 200;
+        int weekTextWidth = Math.min(timeLabelWidth, getWidth() - timeLabelWidth); // 不超过时间标签宽度
         int weekTextHeight = headerHeight;
-        canvas.drawRect(timeLabelWidth, 0, timeLabelWidth + weekTextWidth, weekTextHeight, backgroundPaint);
-        drawText(canvas, "第" + currentWeek + "周", timeLabelWidth + weekTextWidth / 2, headerHeight / 2, textPaint);
+        canvas.drawRect(0, 0, weekTextWidth, weekTextHeight, backgroundPaint);
+        
+        // 调整文本大小以适应更小的空间
+        float originalTextSize = textPaint.getTextSize();
+        textPaint.setTextSize(spToPx(12)); // 使用更小的字体
+        drawText(canvas, "第" + currentWeek + "周", weekTextWidth / 2, headerHeight / 2, textPaint);
+        textPaint.setTextSize(originalTextSize); // 恢复原始文本大小
 
         // 绘制星期标题
         for (int i = 0; i < WEEK_DAYS; i++) {
@@ -200,12 +241,15 @@ public class CourseTableView extends View {
             canvas.drawRect(left, top, right, bottom, borderPaint);
 
             // 绘制星期文字
-            drawText(canvas, WEEK_DAY_STRINGS[i], (left + right) / 2, headerHeight / 2 - 10, textPaint);
-            drawText(canvas, dateStrings[i], (left + right) / 2, headerHeight / 2 + 15, smallTextPaint);
+            drawText(canvas, WEEK_DAY_STRINGS[i], (left + right) / 2, headerHeight / 2, textPaint);
         }
     }
 
     private void drawTimeLabels(Canvas canvas) {
+        // 调整文本大小以适应更小的宽度
+        float originalTextSize = textPaint.getTextSize();
+        textPaint.setTextSize(spToPx(10)); // 使用更小的字体
+        
         for (int i = 0; i < MAX_COURSE_SLOTS; i++) {
             int top = headerHeight + i * timeSlotHeight;
             int bottom = top + timeSlotHeight;
@@ -214,16 +258,29 @@ public class CourseTableView extends View {
             backgroundPaint.setColor(TIME_LABEL_BACKGROUND_COLOR);
             canvas.drawRect(0, top, timeLabelWidth, bottom, backgroundPaint);
 
-            // 绘制时间文字
-            String timeSlotString = (i + 1) + "\n" + TIME_SLOT_STRINGS[i];
-            int textX = timeLabelWidth / 2;
-            int textY = top + timeSlotHeight / 2;
-            drawMultilineText(canvas, timeSlotString, textX, textY);
+            // 绘制节次数字
+            String slotNumber = String.valueOf(i + 1);
+            int numberX = timeLabelWidth / 2;
+            int numberY = top + timeSlotHeight / 3; // 上三分之一位置
+            drawText(canvas, slotNumber, numberX, numberY, textPaint);
+            
+            // 绘制时间范围
+            String timeRange = TIME_SLOT_STRINGS[i];
+            // 如果时间字符串太长，只显示开始时间
+            if (timeRange.length() > 8) {
+                timeRange = timeRange.substring(0, 5); // 只取 "08:00" 部分
+            }
+            int timeX = timeLabelWidth / 2;
+            int timeY = top + timeSlotHeight * 2 / 3; // 下三分之二位置
+            drawText(canvas, timeRange, timeX, timeY, textPaint);
 
             // 绘制右边框
             canvas.drawLine(timeLabelWidth, top, timeLabelWidth, bottom, borderPaint);
         }
 
+        // 恢复原始文本大小
+        textPaint.setTextSize(originalTextSize);
+        
         // 绘制底部横线
         canvas.drawLine(0, getHeight(), getWidth(), getHeight(), borderPaint);
     }
@@ -281,22 +338,53 @@ public class CourseTableView extends View {
     }
 
     private void drawCourseInfo(Canvas canvas, Course course, float centerX, float centerY, float height) {
-        // 绘制课程名称
+        // 根据单元格高度动态调整文本大小
         float textSize = spToPx(14);
         if (height < 100) {
             textSize = spToPx(12);
         }
+        if (height < 80) {
+            textSize = spToPx(10);
+        }
+        
         textPaint.setTextSize(textSize);
         textPaint.setColor(Color.BLACK);
 
-        String[] lines = getCourseInfoLines(course);
-        float lineHeight = textSize * 1.5f;
-        float totalTextHeight = lines.length * lineHeight;
+        // 只显示课程名和地点
+        String courseName = course.getCourseName();
+        String location = course.getLocation();
+        
+        float lineHeight = textSize * 1.3f;
+        float totalTextHeight = 2 * lineHeight; // 只显示两行
         float startY = centerY - totalTextHeight / 2 + textSize;
 
-        for (int i = 0; i < lines.length; i++) {
-            float y = startY + i * lineHeight;
-            drawText(canvas, lines[i], centerX, y, textPaint);
+        // 绘制课程名称
+        String nameText = courseName;
+        float nameWidth = textPaint.measureText(nameText);
+        if (nameWidth > weekDayWidth - 2 * padding) {
+            int maxChars = (int) ((weekDayWidth - 2 * padding) * nameText.length() / nameWidth);
+            if (maxChars > 3) {
+                nameText = nameText.substring(0, maxChars - 2) + "...";
+            } else {
+                nameText = nameText.substring(0, Math.min(maxChars, nameText.length()));
+            }
+        }
+        drawText(canvas, nameText, centerX, startY, textPaint);
+        
+        // 绘制地点
+        if (location != null && !location.isEmpty()) {
+            String locationText = "@" + location;
+            float locationY = startY + lineHeight;
+            float locationWidth = textPaint.measureText(locationText);
+            if (locationWidth > weekDayWidth - 2 * padding) {
+                int maxChars = (int) ((weekDayWidth - 2 * padding) * locationText.length() / locationWidth);
+                if (maxChars > 3) {
+                    locationText = locationText.substring(0, maxChars - 2) + "...";
+                } else {
+                    locationText = locationText.substring(0, Math.min(maxChars, locationText.length()));
+                }
+            }
+            drawText(canvas, locationText, centerX, locationY, textPaint);
         }
     }
 
@@ -424,12 +512,21 @@ public class CourseTableView extends View {
                     if (onCourseClickListener != null) {
                         onCourseClickListener.onCourseClick(course);
                     }
+                    // 显示HalfPanel
+                    showCourseDetails(course);
                     return true;
                 }
             }
         }
 
         return super.onTouchEvent(event);
+    }
+    
+    private void showCourseDetails(Course course) {
+        if (halfPanel != null) {
+            clickedCourse = course;
+            halfPanel.showCourseInfo(course);
+        }
     }
 
     // 设置课程列表
@@ -450,6 +547,17 @@ public class CourseTableView extends View {
         if (dates != null && dates.length == WEEK_DAYS) {
             this.dateStrings = dates;
             invalidate();
+        }
+    }
+
+    // 设置HalfPanel
+    public void setHalfPanel(HalfPanel halfPanel) {
+        this.halfPanel = halfPanel;
+        if (halfPanel != null) {
+            halfPanel.setOnCloseListener(() -> {
+                halfPanel.hidePanel();
+                clickedCourse = null;
+            });
         }
     }
 

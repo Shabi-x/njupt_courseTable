@@ -68,6 +68,7 @@
 
         <!-- 课程表视图 -->
         <ScrollView
+            android:id="@+id/layout_courses"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:scrollbars="vertical"
@@ -173,103 +174,26 @@
 
                 </LinearLayout>
 
-                <!-- 日期显示 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/white"
-                    android:orientation="horizontal">
 
-                    <View
-                        android:layout_width="80dp"
-                        android:layout_height="36dp" />
-
-                    <!-- 日期标签 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="7"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/date_mon"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="3/24"
-                            android:textSize="14sp"
-                            android:textColor="@color/medium_gray" />
-
-                        <TextView
-                            android:id="@+id/date_tue"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="3/25"
-                            android:textSize="14sp"
-                            android:textColor="@color/medium_gray" />
-
-                        <TextView
-                            android:id="@+id/date_wed"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="3/26"
-                            android:textSize="14sp"
-                            android:textColor="@color/medium_gray" />
-
-                        <TextView
-                            android:id="@+id/date_thu"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="3/27"
-                            android:textSize="14sp"
-                            android:textColor="@color/medium_gray" />
-
-                        <TextView
-                            android:id="@+id/date_fri"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="3/28"
-                            android:textSize="14sp"
-                            android:textColor="@color/medium_gray" />
-
-                        <TextView
-                            android:id="@+id/date_sat"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="3/29"
-                            android:textSize="14sp"
-                            android:textColor="@color/medium_gray" />
-
-                        <TextView
-                            android:id="@+id/date_sun"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="3/30"
-                            android:textSize="14sp"
-                            android:textColor="@color/medium_gray" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
 
                 <!-- 课程表自定义视图 -->
-                <com.example.njupt_coursetable.ui.view.CourseTableView
-                    android:id="@+id/course_table_view"
+                <HorizontalScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none">
+                    
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                        
+                        <com.example.njupt_coursetable.ui.view.CourseTableView
+                            android:id="@+id/course_table_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                            
+                    </FrameLayout>
+                        
+                </HorizontalScrollView>
 
                 <!-- 空状态视图 -->
                 <TextView
@@ -284,6 +208,36 @@
             </LinearLayout>
 
         </ScrollView>
+
+        <!-- 提醒列表视图 -->
+        <LinearLayout
+            android:id="@+id/layout_reminders"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view_reminders"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- 空状态视图 -->
+            <TextView
+                android:id="@+id/text_empty_reminders"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:gravity="center"
+                android:text="暂无提醒，点击右下角按钮添加"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
         <!-- 底部导航 -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -308,5 +262,11 @@
         android:src="@drawable/ic_add"
         app:layout_anchor="@id/bottom_navigation"
         app:layout_anchorGravity="top|end" />
+
+    <!-- 课程详情面板 -->
+    <com.example.njupt_coursetable.ui.view.HalfPanel
+        android:id="@+id/half_panel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
