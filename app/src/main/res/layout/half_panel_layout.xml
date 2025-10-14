@@ -193,15 +193,5 @@
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
-
-        <!-- 关闭按钮 -->
-        <Button
-            android:id="@+id/btn_close"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_background"
-            android:text="关闭"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
     </LinearLayout>
 </FrameLayout>

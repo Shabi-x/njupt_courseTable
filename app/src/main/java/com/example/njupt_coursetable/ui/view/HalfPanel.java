@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -24,7 +23,7 @@ public class HalfPanel extends FrameLayout {
     private TextView courseContactText;
     private TextView courseTypeText;
     private TextView courseNoteText;
-    private Button closeButton;
+    private View backgroundOverlay;
     
     private OnCloseListener onCloseListener;
     
@@ -53,9 +52,10 @@ public class HalfPanel extends FrameLayout {
         courseContactText = findViewById(R.id.text_course_contact);
         courseTypeText = findViewById(R.id.text_course_type);
         courseNoteText = findViewById(R.id.text_course_note);
-        closeButton = findViewById(R.id.btn_close);
+        backgroundOverlay = findViewById(R.id.background_overlay);
         
-        closeButton.setOnClickListener(v -> {
+        // 设置背景遮罩点击事件
+        backgroundOverlay.setOnClickListener(v -> {
             if (onCloseListener != null) {
                 onCloseListener.onClose();
             }
