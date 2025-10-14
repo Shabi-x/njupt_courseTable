@@ -301,6 +301,18 @@ public class CourseTableView extends View {
 
     private void drawCourses(Canvas canvas) {
         for (Course course : courses) {
+            // 根据当前周数和课程的周类型过滤课程
+            String weekType = course.getWeekType();
+            if (weekType != null) {
+                if ("单周".equals(weekType) && currentWeek % 2 == 0) {
+                    continue; // 单周课程，但当前是双周，跳过
+                }
+                if ("双周".equals(weekType) && currentWeek % 2 == 1) {
+                    continue; // 双周课程，但当前是单周，跳过
+                }
+                // "全周"课程总是显示
+            }
+            
             // 获取课程的位置信息
             int dayOfWeek = getDayOfWeekIndex(course.getDayOfWeek());
             if (dayOfWeek < 0 || dayOfWeek >= WEEK_DAYS) continue;
@@ -491,6 +503,18 @@ public class CourseTableView extends View {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             // 检查是否点击了课程区域
             for (Course course : courses) {
+                // 应用与drawCourses方法相同的单双周过滤逻辑
+                String weekType = course.getWeekType();
+                if (weekType != null) {
+                    if ("单周".equals(weekType) && currentWeek % 2 == 0) {
+                        continue; // 单周课程，但当前是双周，跳过
+                    }
+                    if ("双周".equals(weekType) && currentWeek % 2 == 1) {
+                        continue; // 双周课程，但当前是单周，跳过
+                    }
+                    // "全周"课程总是显示
+                }
+                
                 int dayOfWeek = getDayOfWeekIndex(course.getDayOfWeek());
                 if (dayOfWeek < 0 || dayOfWeek >= WEEK_DAYS) continue;
 

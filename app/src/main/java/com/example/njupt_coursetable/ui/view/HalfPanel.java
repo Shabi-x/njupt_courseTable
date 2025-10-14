@@ -97,13 +97,19 @@ public class HalfPanel extends FrameLayout {
         
         currentCourse = course;
         
-        courseNameText.setText(course.getName());
+        courseNameText.setText(course.getCourseName());
         courseLocationText.setText(course.getLocation());
-        courseWeeksText.setText(course.getWeekRange());
-        courseTeacherText.setText(course.getTeacher());
-        courseContactText.setText(course.getContact());
-        courseTypeText.setText(course.getType());
-        courseNoteText.setText(course.getNote());
+        courseWeeksText.setText(course.getWeekRange() + " (" + course.getWeekType() + ")");
+        courseTeacherText.setText(course.getTeacherName());
+        courseContactText.setText(course.getContactInfo());
+        courseTypeText.setText(course.getProperty());
+        
+        // 显示备注信息，如果没有备注则显示"无"
+        String remarks = course.getRemarks();
+        if (remarks == null || remarks.isEmpty()) {
+            remarks = "无";
+        }
+        courseNoteText.setText(remarks);
         
         // 重置提醒选择状态
         enableReminderRadio.setOnCheckedChangeListener(null); // 临时移除监听器

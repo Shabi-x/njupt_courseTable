@@ -15,4 +15,11 @@
     <color name="header_background">#F5F5F5</color>
     <color name="time_label_background">#F0F0F0</color>
     <color name="current_week_bg">#E3F2FD</color>
+    <color name="white_20">#33FFFFFF</color>
+    <color name="white_50">#80FFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="black_87">#DD000000</color>
+    <color name="week_odd">#4CAF50</color>
+    <color name="week_even">#FF9800</color>
+    <color name="week_all">#2196F3</color>
 </resources>

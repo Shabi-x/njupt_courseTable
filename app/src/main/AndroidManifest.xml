@@ -35,6 +35,13 @@
             </intent-filter>
         </activity>
         
+        <!-- 搜索活动 -->
+        <activity
+            android:name=".ui.activity.SearchActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".ui.activity.MainActivity" />
+        
         <!-- 提醒接收器 -->
         <receiver
             android:name=".reminder.ReminderBroadcastReceiver"

@@ -24,25 +24,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/text_current_week"
+                <Spinner
+                    android:id="@+id/spinner_week_selector"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:text="第6周"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <!-- 更多选项按钮 -->
-                <ImageView
-                    android:id="@+id/btn_more"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_more_vert_white_24dp" />
+                    android:background="@android:color/transparent"
+                    android:dropDownSelector="@color/white"
+                    android:spinnerMode="dropdown"
+                    style="@style/WeekSpinnerStyle" />
 
             </RelativeLayout>
 

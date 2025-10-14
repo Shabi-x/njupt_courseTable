@@ -20,7 +20,7 @@ import com.example.njupt_coursetable.data.model.Reminder;
  */
 @Database(
     entities = {Course.class, Reminder.class},
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters({Converters.class})

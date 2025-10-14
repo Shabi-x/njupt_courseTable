@@ -133,6 +133,25 @@ public class CourseRepository {
     }
     
     /**
+     * 根据周类型获取课程
+     * @param weekType 周类型，如"单周"、"双周"、"全周"
+     * @return 对应周类型的课程列表
+     */
+    public LiveData<List<Course>> getCoursesByWeekType(String weekType) {
+        return courseDao.getCoursesByWeekType(weekType);
+    }
+    
+    /**
+     * 根据星期几和周类型获取课程
+     * @param dayOfWeek 星期几，如"周一"
+     * @param weekType 周类型，如"单周"、"双周"、"全周"
+     * @return 对应星期几和周类型的课程列表
+     */
+    public LiveData<List<Course>> getCoursesByDayAndWeekType(String dayOfWeek, String weekType) {
+        return courseDao.getCoursesByDayAndWeekType(dayOfWeek, weekType);
+    }
+    
+    /**
      * 插入课程
      * @param course 要插入的课程对象
      * @return 插入结果的LiveData

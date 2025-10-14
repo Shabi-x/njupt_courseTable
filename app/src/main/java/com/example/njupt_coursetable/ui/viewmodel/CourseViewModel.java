@@ -131,6 +131,25 @@ public class CourseViewModel extends AndroidViewModel {
     public LiveData<List<Course>> searchCoursesByLocation(String location) {
         return courseRepository.searchCoursesByLocation(location);
     }
+    
+    /**
+     * 根据周类型获取课程
+     * @param weekType 周类型，如"单周"、"双周"、"全周"
+     * @return 对应周类型的课程列表的LiveData
+     */
+    public LiveData<List<Course>> getCoursesByWeekType(String weekType) {
+        return courseRepository.getCoursesByWeekType(weekType);
+    }
+    
+    /**
+     * 根据星期几和周类型获取课程
+     * @param dayOfWeek 星期几，如"周一"
+     * @param weekType 周类型，如"单周"、"双周"、"全周"
+     * @return 对应星期几和周类型的课程列表的LiveData
+     */
+    public LiveData<List<Course>> getCoursesByDayAndWeekType(String dayOfWeek, String weekType) {
+        return courseRepository.getCoursesByDayAndWeekType(dayOfWeek, weekType);
+    }
 
     /**
      * 插入课程

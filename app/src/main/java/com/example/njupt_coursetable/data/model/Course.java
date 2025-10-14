@@ -45,6 +45,8 @@ public class Course {
     private String remarks;       // 备注
 
     private Long reminderId;      // 关联的提醒ID
+    
+    private String weekType;      // 周类型，如"单周"、"双周"、"全周"
 
     // 默认构造函数
     public Course() {
@@ -63,6 +65,23 @@ public class Course {
         this.contactInfo = contactInfo;
         this.property = property;
         this.remarks = remarks;
+        this.weekType = "全周"; // 默认为全周
+    }
+    
+    // 带weekType参数的构造函数
+    public Course(String courseName, String location, String weekRange, 
+                 String dayOfWeek, String timeSlot, String teacherName, 
+                 String contactInfo, String property, String remarks, String weekType) {
+        this.courseName = courseName;
+        this.location = location;
+        this.weekRange = weekRange;
+        this.dayOfWeek = dayOfWeek;
+        this.timeSlot = timeSlot;
+        this.teacherName = teacherName;
+        this.contactInfo = contactInfo;
+        this.property = property;
+        this.remarks = remarks;
+        this.weekType = weekType;
     }
 
     // Getters and Setters
@@ -153,6 +172,14 @@ public class Course {
     public void setReminderId(Long reminderId) {
         this.reminderId = reminderId;
     }
+    
+    public String getWeekType() {
+        return weekType;
+    }
+    
+    public void setWeekType(String weekType) {
+        this.weekType = weekType;
+    }
 
     // 添加一些便捷方法
     public String getName() {
@@ -227,6 +254,7 @@ public class Course {
                 ", contactInfo='" + contactInfo + '\'' +
                 ", property='" + property + '\'' +
                 ", remarks='" + remarks + '\'' +
+                ", weekType='" + weekType + '\'' +
                 ", reminderId=" + reminderId +
                 '}';
     }

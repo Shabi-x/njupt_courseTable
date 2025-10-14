@@ -6,6 +6,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -147,8 +150,8 @@ public class MainActivity extends AppCompatActivity {
         // 设置工具栏
         setSupportActionBar(binding.toolbar);
         
-        // 设置周数显示
-        binding.textCurrentWeek.setText("第" + currentWeek + "周");
+        // 初始化周数选择器
+        initWeekSelector();
         
         // 初始化课程表视图
         courseTableView = binding.courseTableView;
@@ -204,12 +207,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
             return false;
-        });
-        
-        // 设置更多选项按钮
-        binding.btnMore.setOnClickListener(view -> {
-            // 显示更多选项菜单
-            showMoreOptionsMenu();
         });
     }
 
@@ -363,23 +360,75 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 初始化周数选择器
+     */
+    private void initWeekSelector() {
+        // 创建周数选项列表（第1周到第18周）
+        String[] weekOptions = new String[18];
+        for (int i = 0; i < 18; i++) {
+            weekOptions[i] = "第" + (i + 1) + "周";
+        }
+        
+        // 创建适配器
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_week_item,
+                weekOptions
+        );
+        adapter.setDropDownViewResource(R.layout.spinner_week_dropdown_item);
+        
+        // 设置适配器
+        binding.spinnerWeekSelector.setAdapter(adapter);
+        
+        // 设置当前选中项
+        binding.spinnerWeekSelector.setSelection(currentWeek - 1);
+        
+        // 设置选择监听器
+        binding.spinnerWeekSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // 更新当前周数
+                currentWeek = position + 1;
+                
+                // 更新课程表视图
+                courseTableView.setCurrentWeek(currentWeek);
+                
+                // 更新日期显示
+                setWeekDateDisplay();
+            }
+            
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // 不处理
+            }
+        });
+    }
+
+    /**
      * 显示更多选项菜单
      */
     private void showMoreOptionsMenu() {
         // 创建并显示更多选项菜单
-        // 这里可以实现周数切换、设置等功能
+        // 这里可以实现设置等功能
         Toast.makeText(this, "更多选项菜单", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        // 移除搜索菜单项
+        menu.findItem(R.id.action_search).setVisible(false);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_sync) {
+        if (item.getItemId() == R.id.action_search) {
+            // 打开搜索界面
+            Intent intent = new Intent(this, SearchActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (item.getItemId() == R.id.action_sync) {
             // 同步数据
             syncDataFromServer();
             return true;
