@@ -80,6 +80,14 @@ public class CourseRepository {
     }
     
     /**
+     * 同步获取所有课程（用于需要立即获取课程列表的场景）
+     * @return 课程列表
+     */
+    public List<Course> getAllCoursesSync() {
+        return courseDao.getAllCoursesSync();
+    }
+    
+    /**
      * 根据ID获取课程
      * @param courseId 课程ID
      * @return 课程的LiveData对象

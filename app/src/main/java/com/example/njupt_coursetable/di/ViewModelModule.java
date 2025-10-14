@@ -19,23 +19,25 @@ public class ViewModelModule {
 
     /**
      * 提供CourseViewModel实例
+     * @param application 应用实例
      * @param courseRepository 课程仓库
      * @return CourseViewModel实例
      */
     @Provides
     @Singleton
-    CourseViewModel provideCourseViewModel(CourseRepository courseRepository) {
-        return new CourseViewModel(courseRepository);
+    CourseViewModel provideCourseViewModel(android.app.Application application, CourseRepository courseRepository) {
+        return new CourseViewModel(application, courseRepository);
     }
 
     /**
      * 提供ReminderViewModel实例
+     * @param application 应用实例
      * @param reminderRepository 提醒仓库
      * @return ReminderViewModel实例
      */
     @Provides
     @Singleton
-    ReminderViewModel provideReminderViewModel(ReminderRepository reminderRepository) {
-        return new ReminderViewModel(reminderRepository);
+    ReminderViewModel provideReminderViewModel(android.app.Application application, ReminderRepository reminderRepository) {
+        return new ReminderViewModel(application, reminderRepository);
     }
 }

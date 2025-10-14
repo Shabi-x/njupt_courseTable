@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.example.njupt_coursetable.di.AppComponent;
 import com.example.njupt_coursetable.di.AppModule;
+import com.example.njupt_coursetable.di.DaggerAppComponent;
 import com.example.njupt_coursetable.di.ViewModelModule;
 
 /**

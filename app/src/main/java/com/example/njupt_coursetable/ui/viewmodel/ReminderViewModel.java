@@ -74,8 +74,8 @@ public class ReminderViewModel extends AndroidViewModel {
      * @param courseId 课程ID
      * @return 对应课程的提醒列表的LiveData
      */
-    public LiveData<List<Reminder>> getRemindersByCourseId(long courseId) {
-        return reminderRepository.getRemindersByCourseId(courseId);
+    public LiveData<Reminder> getRemindersByCourseId(long courseId) {
+        return reminderRepository.getReminderByCourseId(courseId);
     }
 
     /**

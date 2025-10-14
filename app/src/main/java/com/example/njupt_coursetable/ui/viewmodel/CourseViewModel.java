@@ -1,6 +1,7 @@
 package com.example.njupt_coursetable.ui.viewmodel;
 
 import android.app.Application;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.njupt_coursetable.data.model.Course;
 import com.example.njupt_coursetable.data.repository.CourseRepository;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,6 +60,27 @@ public class CourseViewModel extends AndroidViewModel {
      */
     public LiveData<List<Course>> getAllCourses() {
         return allCourses;
+    }
+    
+    /**
+     * 同步获取所有课程（用于需要立即获取课程列表的场景）
+     * @return 课程列表
+     */
+    public List<Course> getAllCoursesSync() {
+        try {
+            // 在后台线程中执行数据库查询
+            return AsyncTask.execute(() -> {
+                try {
+                    return courseRepository.getAllCoursesSync();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error getting all courses synchronously", e);
+                    return Collections.emptyList();
+                }
+            }).get();
+        } catch (Exception e) {
+            Log.e(TAG, "Error executing async task", e);
+            return Collections.emptyList();
+        }
     }
 
     /**

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 星期几选项 -->
+    <string-array name="days_of_week">
+        <item>周一</item>
+        <item>周二</item>
+        <item>周三</item>
+        <item>周四</item>
+        <item>周五</item>
+        <item>周六</item>
+        <item>周日</item>
+    </string-array>
+    
+    <!-- 时间段选项 -->
+    <string-array name="time_slots">
+        <item>第一节 08:00-08:45</item>
+        <item>第二节 08:50-09:35</item>
+        <item>第三节 09:50-10:35</item>
+        <item>第四节 10:40-11:25</item>
+        <item>第五节 11:30-12:15</item>
+        <item>第六节 13:45-14:30</item>
+        <item>第七节 14:35-15:20</item>
+        <item>第八节 15:35-16:20</item>
+        <item>第九节 16:25-17:10</item>
+    </string-array>
+    
+    <!-- 提醒时间选项 -->
+    <string-array name="advance_minutes">
+        <item>5分钟前</item>
+        <item>10分钟前</item>
+        <item>15分钟前</item>
+        <item>30分钟前</item>
+        <item>1小时前</item>
+    </string-array>
+</resources>

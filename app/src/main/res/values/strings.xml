@@ -1,3 +1,78 @@
 <resources>
-    <string name="app_name">njupt_courseTable</string>
+    <string name="app_name">南邮课表</string>
+    
+    <!-- Navigation -->
+    <string name="nav_courses">课程</string>
+    <string name="nav_reminders">提醒</string>
+    <string name="nav_settings">设置</string>
+    
+    <!-- Common -->
+    <string name="add">添加</string>
+    <string name="edit">编辑</string>
+    <string name="delete">删除</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确认</string>
+    <string name="ok">确定</string>
+    
+    <!-- Course -->
+    <string name="course_name">课程名称</string>
+    <string name="course_location">上课地点</string>
+    <string name="course_teacher">教师姓名</string>
+    <string name="course_weeks">上课周数</string>
+    <string name="course_day">星期</string>
+    <string name="course_start_time">开始时间</string>
+    <string name="course_end_time">结束时间</string>
+    <string name="add_course">添加课程</string>
+    <string name="edit_course">编辑课程</string>
+    <string name="delete_course_confirm">确定要删除这门课程吗？</string>
+    <string name="no_courses">暂无课程</string>
+    <string name="no_courses_description">点击右下角的加号添加课程</string>
+    
+    <!-- Reminder -->
+    <string name="reminder_title">提醒标题</string>
+    <string name="reminder_description">提醒内容</string>
+    <string name="reminder_time">提醒时间</string>
+    <string name="reminder_advance">提前提醒</string>
+    <string name="reminder_course">选择课程</string>
+    <string name="add_reminder">添加提醒</string>
+    <string name="edit_reminder">编辑提醒</string>
+    <string name="delete_reminder_confirm">确定要删除这个提醒吗？</string>
+    <string name="no_reminders">暂无提醒</string>
+    <string name="no_reminders_description">点击右下角的加号添加提醒</string>
+    
+    <!-- Days of Week -->
+    <string name="monday">星期一</string>
+    <string name="tuesday">星期二</string>
+    <string name="wednesday">星期三</string>
+    <string name="thursday">星期四</string>
+    <string name="friday">星期五</string>
+    <string name="saturday">星期六</string>
+    <string name="sunday">星期日</string>
+    
+    <!-- Time Slots -->
+    <string name="time_slot_1">08:00-09:40</string>
+    <string name="time_slot_2">10:00-11:40</string>
+    <string name="time_slot_3">14:00-15:40</string>
+    <string name="time_slot_4">16:00-17:40</string>
+    <string name="time_slot_5">19:00-20:40</string>
+    
+    <!-- Advance Minutes -->
+    <string name="advance_0">准时</string>
+    <string name="advance_5">提前5分钟</string>
+    <string name="advance_10">提前10分钟</string>
+    <string name="advance_15">提前15分钟</string>
+    <string name="advance_30">提前30分钟</string>
+    <string name="advance_60">提前1小时</string>
+    
+    <!-- Notification -->
+    <string name="notification_channel_name">课程提醒</string>
+    <string name="notification_channel_description">课程开始前的提醒通知</string>
+    <string name="notification_title">课程提醒</string>
+    
+    <!-- Error Messages -->
+    <string name="error_empty_field">请填写所有必填字段</string>
+    <string name="error_network">网络连接失败，请检查网络设置</string>
+    <string name="error_server">服务器错误，请稍后再试</string>
+    <string name="error_unknown">未知错误，请稍后再试</string>
 </resources>

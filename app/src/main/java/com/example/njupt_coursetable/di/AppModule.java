@@ -44,6 +44,16 @@ public class AppModule {
     }
 
     /**
+     * 提供应用实例
+     * @return 应用实例
+     */
+    @Provides
+    @Singleton
+    android.app.Application provideApplication() {
+        return (android.app.Application) applicationContext;
+    }
+
+    /**
      * 提供AppDatabase实例
      * @param context 应用上下文
      * @return AppDatabase实例

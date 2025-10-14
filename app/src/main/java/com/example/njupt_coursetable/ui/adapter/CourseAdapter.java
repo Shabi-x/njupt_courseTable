@@ -44,13 +44,12 @@ public class CourseAdapter extends ListAdapter<Course, CourseAdapter.CourseViewH
 
         @Override
         public boolean areContentsTheSame(@NonNull Course oldItem, @NonNull Course newItem) {
-            return oldItem.getName().equals(newItem.getName()) &&
+            return oldItem.getCourseName().equals(newItem.getCourseName()) &&
                     oldItem.getLocation().equals(newItem.getLocation()) &&
-                    oldItem.getWeeks().equals(newItem.getWeeks()) &&
+                    oldItem.getWeekRange().equals(newItem.getWeekRange()) &&
                     oldItem.getDayOfWeek().equals(newItem.getDayOfWeek()) &&
-                    oldItem.getStartTime().equals(newItem.getStartTime()) &&
-                    oldItem.getEndTime().equals(newItem.getEndTime()) &&
-                    oldItem.getTeacher().equals(newItem.getTeacher());
+                    oldItem.getTimeSlot().equals(newItem.getTimeSlot()) &&
+                    oldItem.getTeacherName().equals(newItem.getTeacherName());
         }
     };
 
@@ -103,11 +102,13 @@ public class CourseAdapter extends ListAdapter<Course, CourseAdapter.CourseViewH
          * @param course 课程对象
          */
         public void bind(Course course) {
-            textViewCourseName.setText(course.getName());
+            textViewCourseName.setText(course.getCourseName());
             textViewLocation.setText(course.getLocation());
-            textViewTime.setText(course.getStartTime() + " - " + course.getEndTime());
-            textViewTeacher.setText(course.getTeacher());
-            textViewWeeks.setText(course.getWeeks());
+            // 显示星期几和时间段
+            String timeInfo = course.getDayOfWeek() + " " + course.getTimeSlot();
+            textViewTime.setText(timeInfo);
+            textViewTeacher.setText(course.getTeacherName());
+            textViewWeeks.setText(course.getWeekRange());
         }
     }
 

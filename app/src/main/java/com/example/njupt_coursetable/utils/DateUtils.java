@@ -1,10 +1,8 @@
 package com.example.njupt_coursetable.utils;
 
-import org.threeten.bp.DayOfWeek;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.format.DateTimeFormatter;
-import org.threeten.bp.temporal.TemporalAdjusters;
-
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -16,19 +14,19 @@ public class DateUtils {
     /**
      * 日期格式化器
      */
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault());
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     
     /**
      * 时间格式化器
      */
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault());
+    private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
     /**
      * 获取当前日期
      * @return 当前日期字符串，格式为yyyy-MM-dd
      */
     public static String getCurrentDate() {
-        return LocalDate.now().format(DATE_FORMATTER);
+        return DATE_FORMATTER.format(new Date());
     }
 
     /**
@@ -36,110 +34,157 @@ public class DateUtils {
      * @return 当前时间字符串，格式为HH:mm
      */
     public static String getCurrentTime() {
-        return org.threeten.bp.LocalTime.now().format(TIME_FORMATTER);
+        return TIME_FORMATTER.format(new Date());
     }
 
     /**
      * 将星期几转换为中文表示
-     * @param dayOfWeek 星期几
+     * @param dayOfWeek 星期几 (1-7, 1为周日)
      * @return 中文星期几，如"周一"
      */
-    public static String dayOfWeekToChinese(DayOfWeek dayOfWeek) {
-        switch (dayOfWeek) {
-            case MONDAY:
+    public static String dayOfWeekToChinese(int dayOfWeek) {
+        // 转换Calendar的星期几到我们的标准 (1=周日 -> 7=周六)
+        int standardDayOfWeek = dayOfWeek == Calendar.SUNDAY ? 7 : dayOfWeek - 1;
+        
+        switch (standardDayOfWeek) {
+            case 1:
                 return "周一";
-            case TUESDAY:
+            case 2:
                 return "周二";
-            case WEDNESDAY:
+            case 3:
                 return "周三";
-            case THURSDAY:
+            case 4:
                 return "周四";
-            case FRIDAY:
+            case 5:
                 return "周五";
-            case SATURDAY:
+            case 6:
                 return "周六";
-            case SUNDAY:
+            case 7:
                 return "周日";
             default:
-                return "";
+                return "周一";
         }
     }
 
     /**
-     * 将中文星期几转换为DayOfWeek
+     * 将中文星期几转换为Calendar常量
      * @param chineseDayOfWeek 中文星期几，如"周一"
-     * @return DayOfWeek对象
+     * @return Calendar常量 (Calendar.MONDAY等)
      */
-    public static DayOfWeek chineseToDayOfWeek(String chineseDayOfWeek) {
+    public static int chineseToCalendarDayOfWeek(String chineseDayOfWeek) {
         switch (chineseDayOfWeek) {
             case "周一":
-                return DayOfWeek.MONDAY;
+                return Calendar.MONDAY;
             case "周二":
-                return DayOfWeek.TUESDAY;
+                return Calendar.TUESDAY;
             case "周三":
-                return DayOfWeek.WEDNESDAY;
+                return Calendar.WEDNESDAY;
             case "周四":
-                return DayOfWeek.THURSDAY;
+                return Calendar.THURSDAY;
             case "周五":
-                return DayOfWeek.FRIDAY;
+                return Calendar.FRIDAY;
             case "周六":
-                return DayOfWeek.SATURDAY;
+                return Calendar.SATURDAY;
             case "周日":
-                return DayOfWeek.SUNDAY;
+                return Calendar.SUNDAY;
             default:
-                return DayOfWeek.MONDAY;
+                return Calendar.MONDAY;
         }
     }
 
     /**
      * 获取本周的某一天
-     * @param dayOfWeek 星期几
-     * @return 本周的某一天的日期
+     * @param dayOfWeek Calendar常量 (Calendar.MONDAY等)
+     * @return 本周的某一天的日期字符串
      */
-    public static LocalDate getDateOfCurrentWeek(DayOfWeek dayOfWeek) {
-        return LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-                .plusDays(dayOfWeek.getValue() - DayOfWeek.MONDAY.getValue());
+    public static String getDateOfCurrentWeek(int dayOfWeek) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+        return DATE_FORMATTER.format(calendar.getTime());
     }
 
     /**
      * 获取下周的某一天
-     * @param dayOfWeek 星期几
-     * @return 下周的某一天的日期
+     * @param dayOfWeek Calendar常量 (Calendar.MONDAY等)
+     * @return 下周的某一天的日期字符串
      */
-    public static LocalDate getDateOfNextWeek(DayOfWeek dayOfWeek) {
-        return LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY))
-                .plusDays(dayOfWeek.getValue() - DayOfWeek.MONDAY.getValue());
+    public static String getDateOfNextWeek(int dayOfWeek) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.WEEK_OF_YEAR, 1);
+        calendar.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+        return DATE_FORMATTER.format(calendar.getTime());
     }
 
     /**
      * 检查给定日期是否是本周
-     * @param date 要检查的日期
+     * @param date 要检查的日期字符串
      * @return 如果是本周返回true，否则返回false
      */
-    public static boolean isCurrentWeek(LocalDate date) {
-        LocalDate mondayOfCurrentWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate sundayOfCurrentWeek = mondayOfCurrentWeek.plusDays(6);
-        return !date.isBefore(mondayOfCurrentWeek) && !date.isAfter(sundayOfCurrentWeek);
+    public static boolean isCurrentWeek(String date) {
+        try {
+            Date targetDate = DATE_FORMATTER.parse(date);
+            if (targetDate == null) return false;
+            
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTime(targetDate);
+            
+            Calendar currentCalendar = Calendar.getInstance();
+            
+            // 获取本周一的日期
+            Calendar mondayOfCurrentWeek = Calendar.getInstance();
+            mondayOfCurrentWeek.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+            
+            // 获取本周日的日期
+            Calendar sundayOfCurrentWeek = Calendar.getInstance();
+            sundayOfCurrentWeek.setTime(mondayOfCurrentWeek.getTime());
+            sundayOfCurrentWeek.add(Calendar.DAY_OF_MONTH, 6);
+            
+            return !targetCalendar.before(mondayOfCurrentWeek) && !targetCalendar.after(sundayOfCurrentWeek);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
      * 检查给定日期是否是下周
-     * @param date 要检查的日期
+     * @param date 要检查的日期字符串
      * @return 如果是下周返回true，否则返回false
      */
-    public static boolean isNextWeek(LocalDate date) {
-        LocalDate mondayOfNextWeek = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-        LocalDate sundayOfNextWeek = mondayOfNextWeek.plusDays(6);
-        return !date.isBefore(mondayOfNextWeek) && !date.isAfter(sundayOfNextWeek);
+    public static boolean isNextWeek(String date) {
+        try {
+            Date targetDate = DATE_FORMATTER.parse(date);
+            if (targetDate == null) return false;
+            
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTime(targetDate);
+            
+            // 获取下周一的日期
+            Calendar mondayOfNextWeek = Calendar.getInstance();
+            mondayOfNextWeek.add(Calendar.WEEK_OF_YEAR, 1);
+            mondayOfNextWeek.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+            
+            // 获取下周日的日期
+            Calendar sundayOfNextWeek = Calendar.getInstance();
+            sundayOfNextWeek.setTime(mondayOfNextWeek.getTime());
+            sundayOfNextWeek.add(Calendar.DAY_OF_MONTH, 6);
+            
+            return !targetCalendar.before(mondayOfNextWeek) && !targetCalendar.after(sundayOfNextWeek);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
      * 解析日期字符串
      * @param dateString 日期字符串，格式为yyyy-MM-dd
-     * @return LocalDate对象
+     * @return Date对象
      */
-    public static LocalDate parseDate(String dateString) {
-        return LocalDate.parse(dateString, DATE_FORMATTER);
+    public static Date parseDate(String dateString) {
+        try {
+            return DATE_FORMATTER.parse(dateString);
+        } catch (Exception e) {
+            return new Date();
+        }
     }
 
     /**
@@ -147,7 +192,7 @@ public class DateUtils {
      * @param date 日期
      * @return 格式化后的日期字符串，格式为yyyy-MM-dd
      */
-    public static String formatDate(LocalDate date) {
-        return date.format(DATE_FORMATTER);
+    public static String formatDate(Date date) {
+        return DATE_FORMATTER.format(date);
     }
 }
