@@ -201,7 +201,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="400dp"
                     android:gravity="center"
-                    android:text="暂无课程，点击右下角按钮添加"
+                    android:text="暂无课程"
                     android:textSize="16sp"
                     android:visibility="gone" />
 
@@ -233,7 +233,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="400dp"
                 android:gravity="center"
-                android:text="暂无提醒，点击右下角按钮添加"
+                android:text="暂无提醒"
                 android:textSize="16sp"
                 android:visibility="gone" />
 
@@ -251,17 +251,6 @@
             app:menu="@menu/bottom_navigation" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- 浮动操作按钮 -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:contentDescription="添加"
-        android:src="@drawable/ic_add"
-        app:layout_anchor="@id/bottom_navigation"
-        app:layout_anchorGravity="top|end" />
 
     <!-- 课程详情面板 -->
     <com.example.njupt_coursetable.ui.view.HalfPanel

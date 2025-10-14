@@ -196,28 +196,14 @@ public class MainActivity extends AppCompatActivity {
                 // 显示课程表视图
                 binding.layoutCourses.setVisibility(View.VISIBLE);
                 binding.layoutReminders.setVisibility(View.GONE);
-                binding.fab.setVisibility(View.VISIBLE);
                 return true;
             } else if (item.getItemId() == R.id.navigation_reminders) {
                 // 显示提醒列表
                 binding.layoutCourses.setVisibility(View.GONE);
                 binding.layoutReminders.setVisibility(View.VISIBLE);
-                binding.fab.setVisibility(View.VISIBLE);
                 return true;
             }
             return false;
-        });
-        
-        // 设置浮动按钮
-        FloatingActionButton fab = binding.fab;
-        fab.setOnClickListener(view -> {
-            if (binding.layoutCourses.getVisibility() == View.VISIBLE) {
-                // 添加课程
-                showCourseDialog(null);
-            } else if (binding.layoutReminders.getVisibility() == View.VISIBLE) {
-                // 添加提醒
-                showReminderDialog(null);
-            }
         });
         
         // 设置更多选项按钮

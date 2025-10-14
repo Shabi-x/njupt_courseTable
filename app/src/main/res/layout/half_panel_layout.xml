@@ -23,13 +23,30 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- 顶部拖拽指示器 -->
-        <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:background="@color/medium_gray" />
+        <!-- 顶部拖拽指示器和开启提醒 -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <!-- 顶部拖拽指示器 -->
+            <View
+                android:id="@+id/drag_indicator"
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_centerHorizontal="true"
+                android:background="@color/medium_gray" />
+
+            <!-- 开启提醒 -->
+            <RadioButton
+                android:id="@+id/radio_enable_reminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="开启提醒"
+                android:textSize="14sp" />
+        </RelativeLayout>
 
         <!-- 课程名称 -->
         <TextView
