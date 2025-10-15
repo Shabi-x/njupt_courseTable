@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.RadioButton;
+import android.widget.Switch;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -29,7 +29,7 @@ public class HalfPanel extends FrameLayout {
     private TextView courseTypeText;
     private TextView courseNoteText;
     private View backgroundOverlay;
-    private RadioButton enableReminderRadio;
+    private Switch enableReminderSwitch;
     
     private OnCloseListener onCloseListener;
     private Course currentCourse;
@@ -61,7 +61,7 @@ public class HalfPanel extends FrameLayout {
         courseTypeText = findViewById(R.id.text_course_type);
         courseNoteText = findViewById(R.id.text_course_note);
         backgroundOverlay = findViewById(R.id.background_overlay);
-        enableReminderRadio = findViewById(R.id.radio_enable_reminder);
+        enableReminderSwitch = findViewById(R.id.switch_enable_reminder);
         
         // 设置背景遮罩点击事件
         backgroundOverlay.setOnClickListener(v -> {
@@ -71,7 +71,7 @@ public class HalfPanel extends FrameLayout {
         });
         
         // 设置提醒选择监听器
-        enableReminderRadio.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        enableReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (currentCourse == null) return;
             
             if (isChecked) {
@@ -112,9 +112,9 @@ public class HalfPanel extends FrameLayout {
         courseNoteText.setText(remarks);
         
         // 重置提醒选择状态
-        enableReminderRadio.setOnCheckedChangeListener(null); // 临时移除监听器
-        enableReminderRadio.setChecked(false); // 默认不开启提醒
-        enableReminderRadio.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        enableReminderSwitch.setOnCheckedChangeListener(null); // 临时移除监听器
+        enableReminderSwitch.setChecked(false); // 默认不开启提醒
+        enableReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (currentCourse == null) return;
             
             if (isChecked) {
