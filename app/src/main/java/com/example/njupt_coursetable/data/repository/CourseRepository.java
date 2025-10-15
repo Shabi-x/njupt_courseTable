@@ -12,6 +12,7 @@ import com.example.njupt_coursetable.data.model.Course;
 import com.example.njupt_coursetable.data.remote.RetrofitClient;
 import com.example.njupt_coursetable.data.remote.api.CourseApiService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -149,6 +150,23 @@ public class CourseRepository {
      */
     public LiveData<List<Course>> getCoursesByDayAndWeekType(String dayOfWeek, String weekType) {
         return courseDao.getCoursesByDayAndWeekType(dayOfWeek, weekType);
+    }
+    
+    /**
+     * 根据周数获取课程
+     * @param weekNumber 周数，如"1"
+     * @return 包含该周数的课程列表
+     */
+    public LiveData<List<Course>> getCoursesByWeekNumber(String weekNumber) {
+        return courseDao.getCoursesByWeekNumber(weekNumber);
+    }
+    
+    /**
+     * 获取所有需要提醒的课程
+     * @return 需要提醒的课程列表
+     */
+    public LiveData<List<Course>> getCoursesWithReminder() {
+        return courseDao.getCoursesWithReminder();
     }
     
     /**
@@ -294,6 +312,165 @@ public class CourseRepository {
             public void onFailure(Call<List<Course>> call, Throwable t) {
                 Log.e(TAG, "Error syncing courses from server", t);
                 result.postValue(false);
+            }
+        });
+        
+        return result;
+    }
+    
+    /**
+     * 从服务器同步指定周数的课程数据
+     * @param weekNumber 周数，如"1"
+     * @return 同步结果的LiveData
+     */
+    public LiveData<List<Course>> syncCoursesByWeekFromServer(String weekNumber) {
+        MutableLiveData<List<Course>> result = new MutableLiveData<>();
+        
+        courseApiService.getCoursesByWeek(weekNumber).enqueue(new Callback<List<Course>>() {
+            @Override
+            public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Course> courses = response.body();
+                    result.postValue(courses);
+                } else {
+                    Log.e(TAG, "Failed to sync courses by week from server: " + response.message());
+                    result.postValue(new ArrayList<>());
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<List<Course>> call, Throwable t) {
+                Log.e(TAG, "Error syncing courses by week from server", t);
+                result.postValue(new ArrayList<>());
+            }
+        });
+        
+        return result;
+    }
+    
+    /**
+     * 添加课程提醒
+     * @param courseId 课程ID
+     * @return 操作结果的LiveData
+     */
+    public LiveData<Boolean> addCourseReminder(long courseId) {
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        
+        executorService.execute(() -> {
+            // 先从本地数据库获取课程信息
+            Course course = courseDao.getCourseByIdSync(courseId);
+            
+            if (course != null) {
+                // 更新课程的shouldReminder字段
+                course.setShouldReminder(true);
+                int rowsAffected = courseDao.update(course);
+                
+                if (rowsAffected > 0) {
+                    // 同步到服务器
+                    courseApiService.updateCourse(courseId, course).enqueue(new Callback<Course>() {
+                        @Override
+                        public void onResponse(Call<Course> call, Response<Course> response) {
+                            if (response.isSuccessful()) {
+                                Log.d(TAG, "Course reminder added on server: " + courseId);
+                                result.postValue(true);
+                            } else {
+                                Log.e(TAG, "Failed to add course reminder on server: " + response.message());
+                                result.postValue(false);
+                            }
+                        }
+                        
+                        @Override
+                        public void onFailure(Call<Course> call, Throwable t) {
+                            Log.e(TAG, "Error adding course reminder on server", t);
+                            result.postValue(false);
+                        }
+                    });
+                } else {
+                    Log.e(TAG, "Failed to update course in local database: " + courseId);
+                    result.postValue(false);
+                }
+            } else {
+                Log.e(TAG, "Course not found: " + courseId);
+                result.postValue(false);
+            }
+        });
+        
+        return result;
+    }
+    
+    /**
+     * 移除课程提醒
+     * @param courseId 课程ID
+     * @return 操作结果的LiveData
+     */
+    public LiveData<Boolean> removeCourseReminder(long courseId) {
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        
+        executorService.execute(() -> {
+            // 先从本地数据库获取课程信息
+            Course course = courseDao.getCourseByIdSync(courseId);
+            
+            if (course != null) {
+                // 更新课程的shouldReminder字段
+                course.setShouldReminder(false);
+                int rowsAffected = courseDao.update(course);
+                
+                if (rowsAffected > 0) {
+                    // 同步到服务器
+                    courseApiService.updateCourse(courseId, course).enqueue(new Callback<Course>() {
+                        @Override
+                        public void onResponse(Call<Course> call, Response<Course> response) {
+                            if (response.isSuccessful()) {
+                                Log.d(TAG, "Course reminder removed on server: " + courseId);
+                                result.postValue(true);
+                            } else {
+                                Log.e(TAG, "Failed to remove course reminder on server: " + response.message());
+                                result.postValue(false);
+                            }
+                        }
+                        
+                        @Override
+                        public void onFailure(Call<Course> call, Throwable t) {
+                            Log.e(TAG, "Error removing course reminder on server", t);
+                            result.postValue(false);
+                        }
+                    });
+                } else {
+                    Log.e(TAG, "Failed to update course in local database: " + courseId);
+                    result.postValue(false);
+                }
+            } else {
+                Log.e(TAG, "Course not found: " + courseId);
+                result.postValue(false);
+            }
+        });
+        
+        return result;
+    }
+    
+    /**
+     * 从服务器同步需要提醒的课程数据
+     * @return 同步结果的LiveData
+     */
+    public LiveData<List<Course>> syncCoursesWithRemindersFromServer() {
+        MutableLiveData<List<Course>> result = new MutableLiveData<>();
+        
+        courseApiService.getCoursesWithReminders().enqueue(new Callback<List<Course>>() {
+            @Override
+            public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Course> courses = response.body();
+                    result.postValue(courses);
+                } else {
+                    Log.e(TAG, "Failed to sync courses with reminders from server: " + response.message());
+                    result.postValue(new ArrayList<>());
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<List<Course>> call, Throwable t) {
+                Log.e(TAG, "Error syncing courses with reminders from server", t);
+                result.postValue(new ArrayList<>());
             }
         });
         

@@ -22,4 +22,5 @@
     <color name="week_odd">#4CAF50</color>
     <color name="week_even">#FF9800</color>
     <color name="week_all">#2196F3</color>
+    <color name="gray_600">#757575</color>
 </resources>

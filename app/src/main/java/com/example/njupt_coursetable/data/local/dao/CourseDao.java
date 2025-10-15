@@ -143,4 +143,19 @@ public interface CourseDao {
      */
     @Query("SELECT * FROM courses WHERE dayOfWeek = :dayOfWeek AND weekType = :weekType ORDER BY timeSlot")
     LiveData<List<Course>> getCoursesByDayAndWeekType(String dayOfWeek, String weekType);
+    
+    /**
+     * 根据周数获取课程
+     * @param weekNumber 周数，如"1"
+     * @return 包含该周数的课程列表
+     */
+    @Query("SELECT * FROM courses WHERE weekRange LIKE '%' || :weekNumber || '%' ORDER BY dayOfWeek, timeSlot")
+    LiveData<List<Course>> getCoursesByWeekNumber(String weekNumber);
+    
+    /**
+     * 获取所有需要提醒的课程
+     * @return 需要提醒的课程列表
+     */
+    @Query("SELECT * FROM courses WHERE shouldReminder = 1 ORDER BY dayOfWeek, timeSlot")
+    LiveData<List<Course>> getCoursesWithReminder();
 }

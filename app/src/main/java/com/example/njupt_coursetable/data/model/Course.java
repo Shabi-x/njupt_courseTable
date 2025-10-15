@@ -47,6 +47,9 @@ public class Course {
     private Long reminderId;      // 关联的提醒ID
     
     private String weekType;      // 周类型，如"单周"、"双周"、"全周"
+    
+    @SerializedName("shouldReminder")
+    private boolean shouldReminder; // 是否需要提醒
 
     // 默认构造函数
     public Course() {
@@ -179,6 +182,14 @@ public class Course {
     
     public void setWeekType(String weekType) {
         this.weekType = weekType;
+    }
+    
+    public boolean isShouldReminder() {
+        return shouldReminder;
+    }
+    
+    public void setShouldReminder(boolean shouldReminder) {
+        this.shouldReminder = shouldReminder;
     }
 
     // 添加一些便捷方法

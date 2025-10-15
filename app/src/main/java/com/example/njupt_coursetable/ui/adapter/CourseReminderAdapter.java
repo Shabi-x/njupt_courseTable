@@ -51,10 +51,10 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
         @Override
         public boolean areContentsTheSame(@NonNull Course oldItem, @NonNull Course newItem) {
             return oldItem.getCourseName().equals(newItem.getCourseName()) &&
-                    oldItem.getTeacher().equals(newItem.getTeacher()) &&
+                    oldItem.getTeacherName().equals(newItem.getTeacherName()) &&
                     oldItem.getLocation().equals(newItem.getLocation()) &&
-                    oldItem.getDayOfWeek() == newItem.getDayOfWeek() &&
-                    oldItem.getStartSection() == newItem.getStartSection() &&
+                    oldItem.getDayOfWeek().equals(newItem.getDayOfWeek()) &&
+                    oldItem.getTimeSlot().equals(newItem.getTimeSlot()) &&
                     oldItem.isShouldReminder() == newItem.isShouldReminder();
         }
     };
@@ -109,12 +109,12 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
          */
         public void bind(Course course) {
             textViewCourseName.setText(course.getCourseName());
-            textViewTeacher.setText(course.getTeacher());
+            textViewTeacher.setText(course.getTeacherName());
             textViewLocation.setText(course.getLocation());
             
             // 设置时间信息
-            String dayOfWeek = TimeUtils.getDayOfWeekString(course.getDayOfWeek());
-            String timeRange = TimeUtils.getTimeRangeString(course.getStartSection(), course.getEndSection());
+            String dayOfWeek = course.getDayOfWeek(); // 直接获取字符串形式的星期几
+            String timeRange = course.getTimeSlot(); // 直接获取时间段字符串
             textViewTimeInfo.setText(dayOfWeek + " " + timeRange);
             
             // 计算下次上课时间
@@ -128,33 +128,17 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
          * @return 下次上课时间字符串
          */
         private String calculateNextClassTime(Course course) {
+            // 由于Course类中的dayOfWeek是字符串类型，我们需要将其转换为数字
+            String dayOfWeekStr = course.getDayOfWeek();
+            int courseDayOfWeek = convertDayOfWeekStringToInt(dayOfWeekStr);
+            
             Calendar now = Calendar.getInstance();
             int currentDayOfWeek = now.get(Calendar.DAY_OF_WEEK);
             // 转换为我们的格式（周日=0，周一=1...周六=6）
             int currentDay = currentDayOfWeek == Calendar.SUNDAY ? 0 : currentDayOfWeek - 1;
             
-            int courseDayOfWeek = course.getDayOfWeek();
-            
             // 计算距离下次上课还有几天
             int daysUntilNextClass = (courseDayOfWeek - currentDay + 7) % 7;
-            
-            // 如果是今天，计算小时和分钟
-            if (daysUntilNextClass == 0) {
-                // 获取课程开始时间
-                int startSection = course.getStartSection();
-                int startHour = TimeUtils.getStartHour(startSection);
-                int startMinute = TimeUtils.getStartMinute(startSection);
-                
-                Calendar courseTime = Calendar.getInstance();
-                courseTime.set(Calendar.HOUR_OF_DAY, startHour);
-                courseTime.set(Calendar.MINUTE, startMinute);
-                courseTime.set(Calendar.SECOND, 0);
-                
-                // 如果课程时间已过，则计算下周
-                if (courseTime.before(now)) {
-                    daysUntilNextClass = 7;
-                }
-            }
             
             // 计算下次上课的具体日期
             Calendar nextClass = Calendar.getInstance();
@@ -169,6 +153,34 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
                 return "明天 " + dateStr;
             } else {
                 return daysUntilNextClass + "天后 " + dateStr;
+            }
+        }
+        
+        /**
+         * 将星期几的字符串转换为数字
+         * @param dayOfWeekStr 星期几的字符串
+         * @return 星期几的数字 (0-6, 0=周日, 1=周一, ..., 6=周六)
+         */
+        private int convertDayOfWeekStringToInt(String dayOfWeekStr) {
+            if (dayOfWeekStr == null) return 1; // 默认周一
+            
+            switch (dayOfWeekStr) {
+                case "周日":
+                    return 0;
+                case "周一":
+                    return 1;
+                case "周二":
+                    return 2;
+                case "周三":
+                    return 3;
+                case "周四":
+                    return 4;
+                case "周五":
+                    return 5;
+                case "周六":
+                    return 6;
+                default:
+                    return 1; // 默认周一
             }
         }
     }

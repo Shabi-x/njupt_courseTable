@@ -24,17 +24,19 @@ import com.example.njupt_coursetable.data.model.Course;
 import com.example.njupt_coursetable.data.model.Reminder;
 import com.example.njupt_coursetable.databinding.ActivityMainBinding;
 import com.example.njupt_coursetable.di.AppComponent;
-import com.example.njupt_coursetable.ui.adapter.ReminderAdapter;
+import com.example.njupt_coursetable.ui.adapter.CourseReminderAdapter;
 import com.example.njupt_coursetable.ui.dialog.CourseDialog;
 import com.example.njupt_coursetable.ui.dialog.ReminderDialog;
 import com.example.njupt_coursetable.ui.view.CourseTableView;
 import com.example.njupt_coursetable.ui.view.HalfPanel;
+import com.example.njupt_coursetable.ui.view.OnCourseReminderListener;
 import com.example.njupt_coursetable.ui.viewmodel.CourseViewModel;
 import com.example.njupt_coursetable.ui.viewmodel.ReminderViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -43,7 +45,7 @@ import java.util.Locale;
  * 主活动类
  * 应用程序的主界面，显示课程表和提醒
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnCourseReminderListener {
 
     private static final String TAG = "MainActivity";
     
@@ -63,9 +65,9 @@ public class MainActivity extends AppCompatActivity {
     private ReminderViewModel reminderViewModel;
     
     /**
-     * 提醒适配器
+     * 课程提醒适配器
      */
-    private ReminderAdapter reminderAdapter;
+    private CourseReminderAdapter courseReminderAdapter;
     
     /**
      * 应用组件
@@ -100,9 +102,6 @@ public class MainActivity extends AppCompatActivity {
         
         // 从服务器同步数据
         syncDataFromServer();
-        
-        // 初始化示例数据
-        initializeSampleData();
         
         // 设置日期显示
         setWeekDateDisplay();
@@ -161,6 +160,9 @@ public class MainActivity extends AppCompatActivity {
         HalfPanel halfPanel = binding.halfPanel;
         courseTableView.setHalfPanel(halfPanel);
         
+        // 设置回调接口
+        halfPanel.setOnCourseReminderListener(this);
+        
         // 设置课程点击监听器
         courseTableView.setOnCourseClickListener(course -> {
             // 点击课程，显示课程详情面板
@@ -174,23 +176,19 @@ public class MainActivity extends AppCompatActivity {
         recyclerViewReminders.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewReminders.setHasFixedSize(true);
         
-        reminderAdapter = new ReminderAdapter(
-                new ReminderAdapter.OnReminderClickListener() {
+        courseReminderAdapter = new CourseReminderAdapter(
+                new CourseReminderAdapter.OnCourseReminderClickListener() {
                     @Override
-                    public void onReminderClick(Reminder reminder) {
-                        // 点击提醒项，编辑提醒
-                        showReminderDialog(reminder);
-                    }
-                },
-                new ReminderAdapter.OnReminderSwitchChangeListener() {
-                    @Override
-                    public void onReminderSwitchChange(Reminder reminder, boolean isEnabled) {
-                        // 更新提醒启用状态
-                        reminderViewModel.updateReminderEnabledStatus(reminder.getId(), isEnabled);
+                    public void onCourseReminderClick(Course course) {
+                        // 点击课程项，显示课程详情
+                        if (course != null) {
+                            HalfPanel halfPanel = binding.halfPanel;
+                            halfPanel.showCourseInfo(course);
+                        }
                     }
                 }
         );
-        recyclerViewReminders.setAdapter(reminderAdapter);
+        recyclerViewReminders.setAdapter(courseReminderAdapter);
         
         // 设置底部导航
         BottomNavigationView bottomNavigationView = binding.bottomNavigation;
@@ -235,13 +233,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         
-        // 观察提醒列表变化
-        reminderViewModel.getAllReminders().observe(this, reminders -> {
-            Log.d(TAG, "Reminders updated: " + (reminders != null ? reminders.size() : 0) + " items");
-            reminderAdapter.submitList(reminders);
+        // 观察课程提醒列表变化
+        courseViewModel.getCoursesWithReminder().observe(this, courses -> {
+            Log.d(TAG, "Courses with reminders updated: " + (courses != null ? courses.size() : 0) + " items");
+            courseReminderAdapter.submitList(courses);
             
             // 更新空状态视图
-            if (reminders == null || reminders.isEmpty()) {
+            if (courses == null || courses.isEmpty()) {
                 binding.textEmptyReminders.setVisibility(View.VISIBLE);
                 binding.recyclerViewReminders.setVisibility(View.GONE);
             } else {
@@ -287,11 +285,20 @@ public class MainActivity extends AppCompatActivity {
      * 从服务器同步数据
      */
     private void syncDataFromServer() {
+        // 观察操作结果
+        courseViewModel.getOperationResult().observe(this, success -> {
+            if (success != null && !success) {
+                // 如果同步失败，初始化示例数据
+                initializeSampleData();
+            }
+            courseViewModel.resetOperationResult();
+        });
+        
         // 同步课程数据
         courseViewModel.syncCoursesFromServer();
         
-        // 同步提醒数据
-        reminderViewModel.syncRemindersFromServer();
+        // 同步课程提醒数据
+        courseViewModel.syncCoursesWithRemindersFromServer();
     }
 
     /**
@@ -446,5 +453,18 @@ public class MainActivity extends AppCompatActivity {
     private void initializeSampleData() {
         DataInitializer dataInitializer = new DataInitializer(this);
         dataInitializer.initializeSampleData();
+    }
+    
+    @Override
+    public void onCourseReminderChanged(Course course, boolean shouldReminder) {
+        if (course != null) {
+            if (shouldReminder) {
+                // 添加课程提醒
+                courseViewModel.addCourseReminder(course.getId());
+            } else {
+                // 移除课程提醒
+                courseViewModel.removeCourseReminder(course.getId());
+            }
+        }
     }
 }

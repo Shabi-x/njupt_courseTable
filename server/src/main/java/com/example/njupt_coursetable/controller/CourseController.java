@@ -70,6 +70,7 @@ public class CourseController {
                     course.setRemarks(courseDetails.getRemarks());
                     course.setReminderId(courseDetails.getReminderId());
                     course.setWeekType(courseDetails.getWeekType());
+                    course.setShouldReminder(courseDetails.isShouldReminder());
                     return ResponseEntity.ok(courseRepository.save(course));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -124,5 +125,32 @@ public class CourseController {
     public List<Course> searchCoursesByLocation(@PathVariable String location) {
         logger.info("Searching courses by location: {}", location);
         return courseRepository.findByLocationContaining(location);
+    }
+    
+    /**
+     * 根据周数查询课程
+     */
+    @GetMapping("/week/{weekNumber}")
+    public List<Course> getCoursesByWeek(@PathVariable String weekNumber) {
+        logger.info("Getting courses for week: {}", weekNumber);
+        return courseRepository.findByWeekNumber(weekNumber);
+    }
+    
+    /**
+     * 根据周类型查询课程
+     */
+    @GetMapping("/type/{weekType}")
+    public List<Course> getCoursesByWeekType(@PathVariable String weekType) {
+        logger.info("Getting courses for week type: {}", weekType);
+        return courseRepository.findByWeekType(weekType);
+    }
+    
+    /**
+     * 获取所有需要提醒的课程
+     */
+    @GetMapping("/reminders")
+    public List<Course> getCoursesWithReminders() {
+        logger.info("Getting all courses with reminders");
+        return courseRepository.findByShouldReminderTrue();
     }
 }

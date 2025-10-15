@@ -3,7 +3,7 @@
     
     <!-- Navigation -->
     <string name="nav_courses">课程</string>
-    <string name="nav_reminders">提醒</string>
+    <string name="nav_reminders">课程提醒</string>
     <string name="nav_settings">设置</string>
     
     <!-- Common -->
@@ -38,8 +38,8 @@
     <string name="add_reminder">添加提醒</string>
     <string name="edit_reminder">编辑提醒</string>
     <string name="delete_reminder_confirm">确定要删除这个提醒吗？</string>
-    <string name="no_reminders">暂无提醒</string>
-    <string name="no_reminders_description">点击右下角的加号添加提醒</string>
+    <string name="no_reminders">暂无课程提醒</string>
+    <string name="no_reminders_description">请在课程详情中开启课程提醒</string>
     
     <!-- Days of Week -->
     <string name="monday">星期一</string>

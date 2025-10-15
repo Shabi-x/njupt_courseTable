@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.njupt_coursetable.data.model.Course;
 import com.example.njupt_coursetable.data.repository.CourseRepository;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.FutureTask;
@@ -150,6 +151,14 @@ public class CourseViewModel extends AndroidViewModel {
     public LiveData<List<Course>> getCoursesByDayAndWeekType(String dayOfWeek, String weekType) {
         return courseRepository.getCoursesByDayAndWeekType(dayOfWeek, weekType);
     }
+    
+    /**
+     * 获取所有需要提醒的课程
+     * @return 需要提醒的课程列表的LiveData
+     */
+    public LiveData<List<Course>> getCoursesWithReminder() {
+        return courseRepository.getCoursesWithReminder();
+    }
 
     /**
      * 插入课程
@@ -209,6 +218,44 @@ public class CourseViewModel extends AndroidViewModel {
     }
 
     /**
+     * 添加课程提醒
+     * @param courseId 课程ID
+     */
+    public void addCourseReminder(long courseId) {
+        isLoading.setValue(true);
+        
+        courseRepository.addCourseReminder(courseId).observeForever(success -> {
+            isLoading.setValue(false);
+            if (success != null && success) {
+                Log.d(TAG, "Course reminder added successfully: " + courseId);
+                operationResult.setValue(true);
+            } else {
+                Log.e(TAG, "Failed to add course reminder: " + courseId);
+                operationResult.setValue(false);
+            }
+        });
+    }
+    
+    /**
+     * 移除课程提醒
+     * @param courseId 课程ID
+     */
+    public void removeCourseReminder(long courseId) {
+        isLoading.setValue(true);
+        
+        courseRepository.removeCourseReminder(courseId).observeForever(success -> {
+            isLoading.setValue(false);
+            if (success != null && success) {
+                Log.d(TAG, "Course reminder removed successfully: " + courseId);
+                operationResult.setValue(true);
+            } else {
+                Log.e(TAG, "Failed to remove course reminder: " + courseId);
+                operationResult.setValue(false);
+            }
+        });
+    }
+    
+    /**
      * 从服务器同步所有课程数据
      */
     public void syncCoursesFromServer() {
@@ -224,6 +271,29 @@ public class CourseViewModel extends AndroidViewModel {
                 operationResult.setValue(false);
             }
         });
+    }
+    
+    /**
+     * 从服务器同步需要提醒的课程数据
+     * @return 需要提醒的课程列表的LiveData
+     */
+    public LiveData<List<Course>> syncCoursesWithRemindersFromServer() {
+        isLoading.setValue(true);
+        
+        MutableLiveData<List<Course>> result = new MutableLiveData<>();
+        
+        courseRepository.syncCoursesWithRemindersFromServer().observeForever(courses -> {
+            isLoading.setValue(false);
+            if (courses != null) {
+                Log.d(TAG, "Courses with reminders synced from server successfully");
+                result.setValue(courses);
+            } else {
+                Log.e(TAG, "Failed to sync courses with reminders from server");
+                result.setValue(new ArrayList<>());
+            }
+        });
+        
+        return result;
     }
 
     /**

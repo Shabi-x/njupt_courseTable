@@ -89,4 +89,27 @@ public interface CourseApiService {
      */
     @GET("api/courses/search/location/{location}")
     Call<List<Course>> searchCoursesByLocation(@Path("location") String location);
+    
+    /**
+     * 根据周数查询课程
+     * @param weekNumber 周数，如"1"、"2"等
+     * @return 对应周数的课程列表的Call对象
+     */
+    @GET("api/courses/week/{weekNumber}")
+    Call<List<Course>> getCoursesByWeek(@Path("weekNumber") String weekNumber);
+    
+    /**
+     * 根据周类型查询课程
+     * @param weekType 周类型，如"单周"、"双周"、"全周"
+     * @return 对应周类型的课程列表的Call对象
+     */
+    @GET("api/courses/type/{weekType}")
+    Call<List<Course>> getCoursesByWeekType(@Path("weekType") String weekType);
+    
+    /**
+     * 获取所有需要提醒的课程
+     * @return 需要提醒的课程列表的Call对象
+     */
+    @GET("api/courses/reminders")
+    Call<List<Course>> getCoursesWithReminders();
 }
