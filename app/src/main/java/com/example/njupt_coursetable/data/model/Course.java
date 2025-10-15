@@ -251,7 +251,7 @@ public class Course {
                 ", property='" + property + '\'' +
                 ", remarks='" + remarks + '\'' +
                 ", weekType='" + weekType + '\'' +
-                ", reminderId=" + reminderId +
+                ", shouldReminder=" + shouldReminder +
                 '}';
     }
 }

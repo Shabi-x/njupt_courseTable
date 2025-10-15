@@ -4,12 +4,9 @@ import android.content.Context;
 
 import com.example.njupt_coursetable.data.local.AppDatabase;
 import com.example.njupt_coursetable.data.local.dao.CourseDao;
-import com.example.njupt_coursetable.data.local.dao.ReminderDao;
 import com.example.njupt_coursetable.data.remote.RetrofitClient;
 import com.example.njupt_coursetable.data.remote.api.CourseApiService;
-import com.example.njupt_coursetable.data.remote.api.ReminderApiService;
 import com.example.njupt_coursetable.data.repository.CourseRepository;
-import com.example.njupt_coursetable.data.repository.ReminderRepository;
 
 import javax.inject.Singleton;
 
@@ -75,16 +72,7 @@ public class AppModule {
         return database.courseDao();
     }
 
-    /**
-     * 提供ReminderDao实例
-     * @param database 数据库实例
-     * @return ReminderDao实例
-     */
-    @Provides
-    @Singleton
-    ReminderDao provideReminderDao(AppDatabase database) {
-        return database.reminderDao();
-    }
+
 
     /**
      * 提供Retrofit实例
@@ -108,16 +96,7 @@ public class AppModule {
         return RetrofitClient.getCourseApiService(context);
     }
 
-    /**
-     * 提供ReminderApiService实例
-     * @param context 应用上下文
-     * @return ReminderApiService实例
-     */
-    @Provides
-    @Singleton
-    ReminderApiService provideReminderApiService(Context context) {
-        return RetrofitClient.getReminderApiService(context);
-    }
+
 
     /**
      * 提供CourseRepository实例
@@ -130,14 +109,5 @@ public class AppModule {
         return CourseRepository.getInstance(context);
     }
 
-    /**
-     * 提供ReminderRepository实例
-     * @param context 应用上下文
-     * @return ReminderRepository实例
-     */
-    @Provides
-    @Singleton
-    ReminderRepository provideReminderRepository(Context context) {
-        return ReminderRepository.getInstance(context);
-    }
+
 }

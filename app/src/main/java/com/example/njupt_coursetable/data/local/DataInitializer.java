@@ -3,7 +3,6 @@ package com.example.njupt_coursetable.data.local;
 import android.content.Context;
 
 import com.example.njupt_coursetable.data.model.Course;
-import com.example.njupt_coursetable.data.model.Reminder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,18 +30,33 @@ public class DataInitializer {
      */
     public void initializeSampleData() {
         executorService.execute(() -> {
+            try {
+                // 检查是否已有数据
+                List<Course> existingCourses = database.courseDao().getAllCoursesSync();
+                if (existingCourses == null || existingCourses.isEmpty()) {
+                    // 添加示例课程
+                    addSampleCourses();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+    
+    /**
+     * 同步初始化示例数据（阻塞直到完成）
+     */
+    public void initializeSampleDataSync() {
+        try {
             // 检查是否已有数据
-            if (database.courseDao().getAllCoursesSync().isEmpty()) {
+            List<Course> existingCourses = database.courseDao().getAllCoursesSync();
+            if (existingCourses == null || existingCourses.isEmpty()) {
                 // 添加示例课程
                 addSampleCourses();
             }
-            
-            // 检查是否已有提醒数据
-            if (database.reminderDao().getAllRemindersSync().isEmpty()) {
-                // 添加示例提醒
-                addSampleReminders();
-            }
-        });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -184,11 +198,5 @@ public class DataInitializer {
         }
     }
     
-    /**
-     * 添加示例提醒数据
-     */
-    private void addSampleReminders() {
-        // 这里可以添加一些示例提醒数据
-        // 由于需要关联课程ID，我们暂时不添加示例提醒
-    }
+
 }

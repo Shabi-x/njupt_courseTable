@@ -1,9 +1,7 @@
 package com.example.njupt_coursetable.di;
 
 import com.example.njupt_coursetable.data.repository.CourseRepository;
-import com.example.njupt_coursetable.data.repository.ReminderRepository;
 import com.example.njupt_coursetable.ui.viewmodel.CourseViewModel;
-import com.example.njupt_coursetable.ui.viewmodel.ReminderViewModel;
 
 import javax.inject.Singleton;
 
@@ -29,15 +27,5 @@ public class ViewModelModule {
         return new CourseViewModel(application, courseRepository);
     }
 
-    /**
-     * 提供ReminderViewModel实例
-     * @param application 应用实例
-     * @param reminderRepository 提醒仓库
-     * @return ReminderViewModel实例
-     */
-    @Provides
-    @Singleton
-    ReminderViewModel provideReminderViewModel(android.app.Application application, ReminderRepository reminderRepository) {
-        return new ReminderViewModel(application, reminderRepository);
-    }
+
 }

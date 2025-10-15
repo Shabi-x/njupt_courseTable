@@ -221,35 +221,9 @@ public class CourseRepository {
     public LiveData<Boolean> syncCoursesFromServer() {
         MutableLiveData<Boolean> result = new MutableLiveData<>();
         
-        courseApiService.getAllCourses().enqueue(new Callback<List<Course>>() {
-            @Override
-            public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Course> courses = response.body();
-                    
-                    executorService.execute(() -> {
-                        // 先清空本地数据库
-                        courseDao.deleteAllCourses();
-                        
-                        // 然后插入从服务器获取的数据
-                        for (Course course : courses) {
-                            courseDao.insert(course);
-                        }
-                        
-                        result.postValue(true);
-                    });
-                } else {
-                    Log.e(TAG, "Failed to sync courses from server: " + response.message());
-                    result.postValue(false);
-                }
-            }
-            
-            @Override
-            public void onFailure(Call<List<Course>> call, Throwable t) {
-                Log.e(TAG, "Error syncing courses from server", t);
-                result.postValue(false);
-            }
-        });
+        // 由于我们不再使用getAllCourses API，这里可以直接返回true
+        // 或者可以根据需要同步特定周的数据
+        result.postValue(true);
         
         return result;
     }

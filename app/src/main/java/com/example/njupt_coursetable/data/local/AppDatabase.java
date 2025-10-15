@@ -58,6 +58,28 @@ public abstract class AppDatabase extends RoomDatabase {
 
     /**
      * 数据库迁移策略
+     * 从版本1到2的迁移
+     */
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // 版本1到2无表结构变化
+        }
+    };
+    
+    /**
+     * 数据库迁移策略
+     * 从版本2到3的迁移
+     */
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            // 版本2到3无表结构变化
+        }
+    };
+
+    /**
+     * 数据库迁移策略
      * 从版本3到4的迁移：删除reminders表
      */
     static final Migration MIGRATION_3_4 = new Migration(3, 4) {
@@ -86,7 +108,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 // 数据库创建时的回调，可以在这里添加初始数据
             }
         })
-        .addMigrations(MIGRATION_3_4)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
         .fallbackToDestructiveMigration() // 如果迁移失败，则重建数据库
         .build();
     }

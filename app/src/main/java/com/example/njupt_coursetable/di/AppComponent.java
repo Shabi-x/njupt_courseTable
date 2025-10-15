@@ -3,7 +3,6 @@ package com.example.njupt_coursetable.di;
 import com.example.njupt_coursetable.NjuptCourseTableApp;
 import com.example.njupt_coursetable.ui.activity.MainActivity;
 import com.example.njupt_coursetable.ui.viewmodel.CourseViewModel;
-import com.example.njupt_coursetable.ui.viewmodel.ReminderViewModel;
 
 import javax.inject.Singleton;
 
@@ -34,10 +33,4 @@ public interface AppComponent {
      * @return CourseViewModel实例
      */
     CourseViewModel courseViewModel();
-
-    /**
-     * 提供ReminderViewModel实例
-     * @return ReminderViewModel实例
-     */
-    ReminderViewModel reminderViewModel();
 }

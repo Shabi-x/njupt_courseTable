@@ -11,9 +11,4 @@
         android:icon="@drawable/ic_reminder"
         android:title="@string/nav_reminders" />
 
-    <item
-        android:id="@+id/navigation_settings"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/nav_settings" />
-
 </menu>

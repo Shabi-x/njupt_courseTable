@@ -42,11 +42,12 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".ui.activity.MainActivity" />
         
-        <!-- 提醒接收器 -->
-        <receiver
-            android:name=".reminder.ReminderBroadcastReceiver"
-            android:enabled="true"
-            android:exported="false" />
+        <!-- 设置活动 -->
+        <activity
+            android:name=".ui.activity.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".ui.activity.MainActivity" />
     </application>
 
 </manifest>

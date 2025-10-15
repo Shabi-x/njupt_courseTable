@@ -21,17 +21,14 @@ import com.example.njupt_coursetable.NjuptCourseTableApp;
 import com.example.njupt_coursetable.R;
 import com.example.njupt_coursetable.data.local.DataInitializer;
 import com.example.njupt_coursetable.data.model.Course;
-import com.example.njupt_coursetable.data.model.Reminder;
 import com.example.njupt_coursetable.databinding.ActivityMainBinding;
 import com.example.njupt_coursetable.di.AppComponent;
 import com.example.njupt_coursetable.ui.adapter.CourseReminderAdapter;
 import com.example.njupt_coursetable.ui.dialog.CourseDialog;
-import com.example.njupt_coursetable.ui.dialog.ReminderDialog;
 import com.example.njupt_coursetable.ui.view.CourseTableView;
 import com.example.njupt_coursetable.ui.view.HalfPanel;
 import com.example.njupt_coursetable.ui.view.OnCourseReminderListener;
 import com.example.njupt_coursetable.ui.viewmodel.CourseViewModel;
-import com.example.njupt_coursetable.ui.viewmodel.ReminderViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -58,11 +55,6 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
      * 课程视图模型
      */
     private CourseViewModel courseViewModel;
-    
-    /**
-     * 提醒视图模型
-     */
-    private ReminderViewModel reminderViewModel;
     
     /**
      * 课程提醒适配器
@@ -121,25 +113,10 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
             public <T extends androidx.lifecycle.ViewModel> T create(@NonNull Class<T> modelClass) {
                 if (modelClass.isAssignableFrom(CourseViewModel.class)) {
                     return (T) appComponent.courseViewModel();
-                } else if (modelClass.isAssignableFrom(ReminderViewModel.class)) {
-                    return (T) appComponent.reminderViewModel();
                 }
                 throw new IllegalArgumentException("Unknown ViewModel class");
             }
         }).get(CourseViewModel.class);
-        
-        reminderViewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends androidx.lifecycle.ViewModel> T create(@NonNull Class<T> modelClass) {
-                if (modelClass.isAssignableFrom(CourseViewModel.class)) {
-                    return (T) appComponent.courseViewModel();
-                } else if (modelClass.isAssignableFrom(ReminderViewModel.class)) {
-                    return (T) appComponent.reminderViewModel();
-                }
-                throw new IllegalArgumentException("Unknown ViewModel class");
-            }
-        }).get(ReminderViewModel.class);
     }
 
     /**
@@ -217,34 +194,30 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
             Log.d(TAG, "Courses updated: " + (courses != null ? courses.size() : 0) + " items");
             
             // 设置课程数据到课程表视图
-            if (courses != null) {
+            if (courses != null && !courses.isEmpty()) {
                 courseTableView.setCourses(courses);
-            }
-            
-            // 更新空状态视图
-            if (courses == null || courses.isEmpty()) {
-                binding.courseTableView.setVisibility(View.GONE);
-                binding.textEmptyCourses.setVisibility(View.VISIBLE);
-                binding.layoutCourses.setVisibility(View.GONE);
-            } else {
                 binding.courseTableView.setVisibility(View.VISIBLE);
                 binding.textEmptyCourses.setVisibility(View.GONE);
-                binding.layoutCourses.setVisibility(View.VISIBLE);
+            } else {
+                // 如果没有课程数据，显示空状态
+                courseTableView.setCourses(new ArrayList<>());
+                binding.courseTableView.setVisibility(View.VISIBLE);
+                binding.textEmptyCourses.setVisibility(View.VISIBLE);
             }
         });
         
         // 观察课程提醒列表变化
         courseViewModel.getCoursesWithReminder().observe(this, courses -> {
             Log.d(TAG, "Courses with reminders updated: " + (courses != null ? courses.size() : 0) + " items");
-            courseReminderAdapter.submitList(courses);
             
-            // 更新空状态视图
-            if (courses == null || courses.isEmpty()) {
-                binding.textEmptyReminders.setVisibility(View.VISIBLE);
-                binding.recyclerViewReminders.setVisibility(View.GONE);
-            } else {
+            if (courses != null && !courses.isEmpty()) {
+                courseReminderAdapter.submitList(courses);
                 binding.textEmptyReminders.setVisibility(View.GONE);
                 binding.recyclerViewReminders.setVisibility(View.VISIBLE);
+            } else {
+                courseReminderAdapter.submitList(new ArrayList<>());
+                binding.textEmptyReminders.setVisibility(View.VISIBLE);
+                binding.recyclerViewReminders.setVisibility(View.GONE);
             }
         });
         
@@ -260,24 +233,11 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
             }
         });
         
-        reminderViewModel.getOperationResult().observe(this, result -> {
-            if (result != null) {
-                if (result) {
-                    Toast.makeText(this, "操作成功", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "操作失败", Toast.LENGTH_SHORT).show();
-                }
-                reminderViewModel.resetOperationResult();
-            }
-        });
-        
         // 观察加载状态
         courseViewModel.getIsLoading().observe(this, isLoading -> {
-            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        });
-        
-        reminderViewModel.getIsLoading().observe(this, isLoading -> {
-            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            if (binding.progressBar != null) {
+                binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            }
         });
     }
 
@@ -285,20 +245,17 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
      * 从服务器同步数据
      */
     private void syncDataFromServer() {
-        // 观察操作结果
-        courseViewModel.getOperationResult().observe(this, success -> {
-            if (success != null && !success) {
-                // 如果同步失败，初始化示例数据
-                initializeSampleData();
-            }
-            courseViewModel.resetOperationResult();
-        });
-        
-        // 同步课程数据
-        courseViewModel.syncCoursesFromServer();
-        
-        // 同步课程提醒数据
-        courseViewModel.syncCoursesWithRemindersFromServer();
+        // 在后台线程中同步初始化示例数据，确保数据在UI显示前准备好
+        new Thread(() -> {
+            DataInitializer dataInitializer = new DataInitializer(this);
+            dataInitializer.initializeSampleDataSync();
+            
+            // 数据初始化完成后，在主线程中同步远程数据
+            runOnUiThread(() -> {
+                courseViewModel.syncCoursesFromServer();
+                courseViewModel.syncCoursesWithRemindersFromServer();
+            });
+        }).start();
     }
 
     /**
@@ -319,26 +276,7 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
         dialog.show(getSupportFragmentManager(), "CourseDialog");
     }
 
-    /**
-     * 显示提醒对话框
-     * @param reminder 提醒对象，如果为null则表示新建提醒
-     */
-    private void showReminderDialog(Reminder reminder) {
-        // 获取所有课程
-        List<Course> courses = courseViewModel.getAllCoursesSync();
-        
-        ReminderDialog dialog = new ReminderDialog(reminder, courses);
-        dialog.setListener(newReminder -> {
-            if (reminder == null) {
-                // 添加新提醒
-                reminderViewModel.insertReminder(newReminder);
-            } else {
-                // 更新现有提醒
-                reminderViewModel.updateReminder(newReminder);
-            }
-        });
-        dialog.show(getSupportFragmentManager(), "ReminderDialog");
-    }
+
 
     /**
      * 设置周日期显示
@@ -441,15 +379,17 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
             return true;
         } else if (item.getItemId() == R.id.action_settings) {
             // 打开设置界面
-            Toast.makeText(this, "设置功能开发中", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
     
     /**
-     * 初始化示例数据
+     * 初始化示例数据（已废弃，使用syncDataFromServer中的同步方法）
      */
+    @Deprecated
     private void initializeSampleData() {
         DataInitializer dataInitializer = new DataInitializer(this);
         dataInitializer.initializeSampleData();

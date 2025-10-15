@@ -105,7 +105,7 @@ public class HalfPanel extends FrameLayout {
             currentCourse.setShouldReminder(isChecked);
             
             if (isChecked) {
-                Toast.makeText(getContext(), "已开启课程提醒", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "已开启课程提醒，将在课程开始前15分钟通知", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "已关闭课程提醒", Toast.LENGTH_SHORT).show();
             }
