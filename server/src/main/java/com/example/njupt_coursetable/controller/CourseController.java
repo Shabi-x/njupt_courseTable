@@ -22,6 +22,16 @@ public class CourseController {
     private CourseRepository courseRepository;
 
     /**
+     * 获取所有课程
+     * @return 所有课程列表
+     */
+    @GetMapping
+    public List<Course> getAllCourses() {
+        logger.info("Getting all courses");
+        return courseRepository.findAll();
+    }
+
+    /**
      * 根据周数查询课程
      * @param weekNumber 周数，如"1"
      * @return 该周的全部课程列表

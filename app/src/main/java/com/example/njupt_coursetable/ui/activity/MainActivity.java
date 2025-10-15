@@ -245,17 +245,9 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
      * 从服务器同步数据
      */
     private void syncDataFromServer() {
-        // 在后台线程中同步初始化示例数据，确保数据在UI显示前准备好
-        new Thread(() -> {
-            DataInitializer dataInitializer = new DataInitializer(this);
-            dataInitializer.initializeSampleDataSync();
-            
-            // 数据初始化完成后，在主线程中同步远程数据
-            runOnUiThread(() -> {
-                courseViewModel.syncCoursesFromServer();
-                courseViewModel.syncCoursesWithRemindersFromServer();
-            });
-        }).start();
+        // 直接从服务器同步数据，不使用本地示例数据
+        courseViewModel.syncAllCoursesFromServer();
+        courseViewModel.syncCoursesWithRemindersFromServer();
     }
 
     /**
@@ -372,10 +364,6 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
             // 打开搜索界面
             Intent intent = new Intent(this, SearchActivity.class);
             startActivity(intent);
-            return true;
-        } else if (item.getItemId() == R.id.action_sync) {
-            // 同步数据
-            syncDataFromServer();
             return true;
         } else if (item.getItemId() == R.id.action_settings) {
             // 打开设置界面

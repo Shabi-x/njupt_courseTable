@@ -20,6 +20,13 @@ import retrofit2.http.Query;
 public interface CourseApiService {
 
     /**
+     * 获取所有课程
+     * @return 所有课程列表的Call对象
+     */
+    @GET("api/courses")
+    Call<List<Course>> getAllCourses();
+
+    /**
      * 根据周数查询课程
      * @param weekNumber 周数，如"1"、"2"等
      * @return 对应周数的课程列表的Call对象

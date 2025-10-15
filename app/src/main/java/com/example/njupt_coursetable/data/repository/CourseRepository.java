@@ -229,6 +229,55 @@ public class CourseRepository {
     }
     
     /**
+     * 从服务器同步所有课程数据（新增）
+     * 这个方法会获取服务器上所有课程并更新到本地数据库
+     * @return 同步结果的LiveData
+     */
+    public LiveData<Boolean> syncAllCoursesFromServer() {
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        
+        courseApiService.getAllCourses().enqueue(new Callback<List<Course>>() {
+            @Override
+            public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Course> courses = response.body();
+                    Log.d(TAG, "Fetched " + courses.size() + " courses from server");
+                    
+                    // 在后台线程中更新本地数据库
+                    executorService.execute(() -> {
+                        try {
+                            // 清空旧数据
+                            courseDao.deleteAllCourses();
+                            
+                            // 插入新数据
+                            if (!courses.isEmpty()) {
+                                courseDao.insertAll(courses.toArray(new Course[0]));
+                                Log.d(TAG, "Successfully synced " + courses.size() + " courses to local database");
+                            }
+                            
+                            result.postValue(true);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error syncing courses to local database", e);
+                            result.postValue(false);
+                        }
+                    });
+                } else {
+                    Log.e(TAG, "Failed to sync courses from server: " + response.message());
+                    result.postValue(false);
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<List<Course>> call, Throwable t) {
+                Log.e(TAG, "Error syncing courses from server", t);
+                result.postValue(false);
+            }
+        });
+        
+        return result;
+    }
+    
+    /**
      * 从服务器同步指定周数的课程数据
      * @param weekNumber 周数，如"1"
      * @return 同步结果的LiveData

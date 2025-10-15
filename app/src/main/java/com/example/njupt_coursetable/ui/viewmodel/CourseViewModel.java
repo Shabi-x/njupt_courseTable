@@ -219,6 +219,24 @@ public class CourseViewModel extends AndroidViewModel {
     }
     
     /**
+     * 从服务器同步所有课程数据（新增）
+     */
+    public void syncAllCoursesFromServer() {
+        isLoading.setValue(true);
+        
+        courseRepository.syncAllCoursesFromServer().observeForever(success -> {
+            isLoading.setValue(false);
+            if (success != null && success) {
+                Log.d(TAG, "All courses synced from server successfully");
+                operationResult.setValue(true);
+            } else {
+                Log.e(TAG, "Failed to sync all courses from server");
+                operationResult.setValue(false);
+            }
+        });
+    }
+    
+    /**
      * 从服务器同步需要提醒的课程数据
      * @return 需要提醒的课程列表的LiveData
      */

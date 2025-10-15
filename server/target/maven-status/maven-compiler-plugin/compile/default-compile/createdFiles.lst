@@ -1,9 +1,6 @@
-com/example/njupt_coursetable/controller/ReminderController.class
 com/example/njupt_coursetable/NjuptCoursetableServerApplication.class
-com/example/njupt_coursetable/repository/ReminderRepository.class
 com/example/njupt_coursetable/model/Course.class
 com/example/njupt_coursetable/config/CorsConfig$1.class
 com/example/njupt_coursetable/config/CorsConfig.class
 com/example/njupt_coursetable/repository/CourseRepository.class
 com/example/njupt_coursetable/controller/CourseController.class
-com/example/njupt_coursetable/model/Reminder.class
