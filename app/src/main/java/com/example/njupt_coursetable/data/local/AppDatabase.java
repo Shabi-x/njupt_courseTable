@@ -10,17 +10,15 @@ import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.example.njupt_coursetable.data.local.dao.CourseDao;
-import com.example.njupt_coursetable.data.local.dao.ReminderDao;
 import com.example.njupt_coursetable.data.model.Course;
-import com.example.njupt_coursetable.data.model.Reminder;
 
 /**
  * 应用数据库类
  * 使用Room持久化库创建和管理数据库
  */
 @Database(
-    entities = {Course.class, Reminder.class},
-    version = 3,
+    entities = {Course.class},
+    version = 4,
     exportSchema = false
 )
 @TypeConverters({Converters.class})
@@ -43,12 +41,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract CourseDao courseDao();
 
     /**
-     * 获取提醒数据访问对象
-     * @return ReminderDao实例
-     */
-    public abstract ReminderDao reminderDao();
-
-    /**
      * 获取数据库实例（单例模式）
      * @param context 应用上下文
      * @return AppDatabase实例
@@ -66,13 +58,13 @@ public abstract class AppDatabase extends RoomDatabase {
 
     /**
      * 数据库迁移策略
-     * 从版本1到版本2的迁移
+     * 从版本3到4的迁移：删除reminders表
      */
-    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-            // 由于我们只是添加了新的方法，没有改变表结构，所以不需要执行任何SQL语句
-            // 如果将来需要修改表结构，可以在这里添加相应的SQL语句
+            // 删除reminders表
+            database.execSQL("DROP TABLE IF EXISTS reminders");
         }
     };
 
@@ -94,7 +86,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 // 数据库创建时的回调，可以在这里添加初始数据
             }
         })
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_3_4)
         .fallbackToDestructiveMigration() // 如果迁移失败，则重建数据库
         .build();
     }

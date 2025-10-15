@@ -87,69 +87,14 @@ public class CourseViewModel extends AndroidViewModel {
             return Collections.emptyList();
         }
     }
-
-    /**
-     * 根据ID获取课程
-     * @param courseId 课程ID
-     * @return 课程的LiveData
-     */
-    public LiveData<Course> getCourseById(long courseId) {
-        return courseRepository.getCourseById(courseId);
-    }
-
-    /**
-     * 根据星期几获取课程
-     * @param dayOfWeek 星期几，如"周一"
-     * @return 对应星期几的课程列表的LiveData
-     */
-    public LiveData<List<Course>> getCoursesByDayOfWeek(String dayOfWeek) {
-        return courseRepository.getCoursesByDayOfWeek(dayOfWeek);
-    }
-
-    /**
-     * 根据课程名搜索课程
-     * @param courseName 课程名
-     * @return 匹配的课程列表的LiveData
-     */
-    public LiveData<List<Course>> searchCoursesByName(String courseName) {
-        return courseRepository.searchCoursesByName(courseName);
-    }
-
-    /**
-     * 根据老师名搜索课程
-     * @param teacherName 老师名
-     * @return 匹配的课程列表的LiveData
-     */
-    public LiveData<List<Course>> searchCoursesByTeacher(String teacherName) {
-        return courseRepository.searchCoursesByTeacher(teacherName);
-    }
-
-    /**
-     * 根据地点搜索课程
-     * @param location 地点
-     * @return 匹配的课程列表的LiveData
-     */
-    public LiveData<List<Course>> searchCoursesByLocation(String location) {
-        return courseRepository.searchCoursesByLocation(location);
-    }
     
     /**
-     * 根据周类型获取课程
-     * @param weekType 周类型，如"单周"、"双周"、"全周"
-     * @return 对应周类型的课程列表的LiveData
+     * 根据周数获取课程
+     * @param weekNumber 周数，如"1"
+     * @return 包含该周数的课程列表的LiveData
      */
-    public LiveData<List<Course>> getCoursesByWeekType(String weekType) {
-        return courseRepository.getCoursesByWeekType(weekType);
-    }
-    
-    /**
-     * 根据星期几和周类型获取课程
-     * @param dayOfWeek 星期几，如"周一"
-     * @param weekType 周类型，如"单周"、"双周"、"全周"
-     * @return 对应星期几和周类型的课程列表的LiveData
-     */
-    public LiveData<List<Course>> getCoursesByDayAndWeekType(String dayOfWeek, String weekType) {
-        return courseRepository.getCoursesByDayAndWeekType(dayOfWeek, weekType);
+    public LiveData<List<Course>> getCoursesByWeekNumber(String weekNumber) {
+        return courseRepository.getCoursesByWeekNumber(weekNumber);
     }
     
     /**

@@ -11,6 +11,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * 课程网络服务接口
@@ -19,19 +20,28 @@ import retrofit2.http.Path;
 public interface CourseApiService {
 
     /**
-     * 获取所有课程
-     * @return 课程列表的Call对象
+     * 根据周数查询课程
+     * @param weekNumber 周数，如"1"、"2"等
+     * @return 对应周数的课程列表的Call对象
      */
-    @GET("api/courses")
-    Call<List<Course>> getAllCourses();
-
+    @GET("api/courses/week/{weekNumber}")
+    Call<List<Course>> getCoursesByWeek(@Path("weekNumber") String weekNumber);
+    
     /**
-     * 根据ID获取课程
-     * @param id 课程ID
-     * @return 课程对象的Call对象
+     * 获取所有需要提醒的课程
+     * @return 需要提醒的课程列表的Call对象
      */
-    @GET("api/courses/{id}")
-    Call<Course> getCourseById(@Path("id") long id);
+    @GET("api/courses/reminders")
+    Call<List<Course>> getCoursesWithReminders();
+    
+    /**
+     * 更新课程的提醒状态
+     * @param id 课程ID
+     * @param shouldReminder 是否需要提醒
+     * @return 更新后的课程对象的Call对象
+     */
+    @PUT("api/courses/{id}/reminder")
+    Call<Course> updateCourseReminderStatus(@Path("id") long id, @Query("shouldReminder") boolean shouldReminder);
 
     /**
      * 创建新课程
@@ -57,59 +67,4 @@ public interface CourseApiService {
      */
     @DELETE("api/courses/{id}")
     Call<Void> deleteCourse(@Path("id") long id);
-
-    /**
-     * 根据星期几获取课程
-     * @param dayOfWeek 星期几，如"周一"
-     * @return 对应星期几的课程列表的Call对象
-     */
-    @GET("api/courses/day/{dayOfWeek}")
-    Call<List<Course>> getCoursesByDayOfWeek(@Path("dayOfWeek") String dayOfWeek);
-
-    /**
-     * 根据课程名搜索课程
-     * @param courseName 课程名
-     * @return 匹配的课程列表的Call对象
-     */
-    @GET("api/courses/search/name/{courseName}")
-    Call<List<Course>> searchCoursesByName(@Path("courseName") String courseName);
-
-    /**
-     * 根据老师名搜索课程
-     * @param teacherName 老师名
-     * @return 匹配的课程列表的Call对象
-     */
-    @GET("api/courses/search/teacher/{teacherName}")
-    Call<List<Course>> searchCoursesByTeacher(@Path("teacherName") String teacherName);
-
-    /**
-     * 根据地点搜索课程
-     * @param location 地点
-     * @return 匹配的课程列表的Call对象
-     */
-    @GET("api/courses/search/location/{location}")
-    Call<List<Course>> searchCoursesByLocation(@Path("location") String location);
-    
-    /**
-     * 根据周数查询课程
-     * @param weekNumber 周数，如"1"、"2"等
-     * @return 对应周数的课程列表的Call对象
-     */
-    @GET("api/courses/week/{weekNumber}")
-    Call<List<Course>> getCoursesByWeek(@Path("weekNumber") String weekNumber);
-    
-    /**
-     * 根据周类型查询课程
-     * @param weekType 周类型，如"单周"、"双周"、"全周"
-     * @return 对应周类型的课程列表的Call对象
-     */
-    @GET("api/courses/type/{weekType}")
-    Call<List<Course>> getCoursesByWeekType(@Path("weekType") String weekType);
-    
-    /**
-     * 获取所有需要提醒的课程
-     * @return 需要提醒的课程列表的Call对象
-     */
-    @GET("api/courses/reminders")
-    Call<List<Course>> getCoursesWithReminders();
 }

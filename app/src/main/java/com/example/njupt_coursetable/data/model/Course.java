@@ -12,14 +12,7 @@ import com.google.gson.annotations.SerializedName;
  * 包含课程的基本信息：课程名、上课地点、上课周数、老师名字、联系方式、属性、备注等
  */
 @Entity(
-    tableName = "courses",
-    foreignKeys = @ForeignKey(
-        entity = Reminder.class,
-        parentColumns = "id",
-        childColumns = "reminderId",
-        onDelete = ForeignKey.SET_NULL
-    ),
-    indices = @Index("reminderId")
+    tableName = "courses"
 )
 public class Course {
 
@@ -43,8 +36,6 @@ public class Course {
     private String property;      // 属性，如"必修"、"选修"
 
     private String remarks;       // 备注
-
-    private Long reminderId;      // 关联的提醒ID
     
     private String weekType;      // 周类型，如"单周"、"双周"、"全周"
     
@@ -168,13 +159,7 @@ public class Course {
         this.remarks = remarks;
     }
 
-    public Long getReminderId() {
-        return reminderId;
-    }
 
-    public void setReminderId(Long reminderId) {
-        this.reminderId = reminderId;
-    }
     
     public String getWeekType() {
         return weekType;

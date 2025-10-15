@@ -29,8 +29,6 @@ public class Course {
     private String property;      // 属性，如"必修"、"选修"
 
     private String remarks;       // 备注
-
-    private Long reminderId;      // 关联的提醒ID
     
     private String weekType;      // 周类型，如"单周"、"双周"、"全周"
     
@@ -153,13 +151,7 @@ public class Course {
         this.remarks = remarks;
     }
 
-    public Long getReminderId() {
-        return reminderId;
-    }
 
-    public void setReminderId(Long reminderId) {
-        this.reminderId = reminderId;
-    }
     
     public String getWeekType() {
         return weekType;

@@ -80,69 +80,12 @@ public interface CourseDao {
     List<Course> getAllCoursesSync();
 
     /**
-     * 根据ID获取课程
-     * @param courseId 课程ID
-     * @return 对应的课程对象
-     */
-    @Query("SELECT * FROM courses WHERE id = :courseId")
-    LiveData<Course> getCourseById(long courseId);
-
-    /**
      * 根据ID获取课程（非LiveData）
      * @param courseId 课程ID
      * @return 对应的课程对象
      */
     @Query("SELECT * FROM courses WHERE id = :courseId")
     Course getCourseByIdSync(long courseId);
-
-    /**
-     * 根据星期几获取课程
-     * @param dayOfWeek 星期几，如"周一"
-     * @return 对应星期几的课程列表
-     */
-    @Query("SELECT * FROM courses WHERE dayOfWeek = :dayOfWeek ORDER BY timeSlot")
-    LiveData<List<Course>> getCoursesByDayOfWeek(String dayOfWeek);
-
-    /**
-     * 根据课程名搜索课程
-     * @param courseName 课程名（支持模糊查询）
-     * @return 匹配的课程列表
-     */
-    @Query("SELECT * FROM courses WHERE courseName LIKE '%' || :courseName || '%' ORDER BY dayOfWeek, timeSlot")
-    LiveData<List<Course>> searchCoursesByName(String courseName);
-
-    /**
-     * 根据老师名搜索课程
-     * @param teacherName 老师名（支持模糊查询）
-     * @return 匹配的课程列表
-     */
-    @Query("SELECT * FROM courses WHERE teacherName LIKE '%' || :teacherName || '%' ORDER BY dayOfWeek, timeSlot")
-    LiveData<List<Course>> searchCoursesByTeacher(String teacherName);
-
-    /**
-     * 根据地点搜索课程
-     * @param location 地点（支持模糊查询）
-     * @return 匹配的课程列表
-     */
-    @Query("SELECT * FROM courses WHERE location LIKE '%' || :location || '%' ORDER BY dayOfWeek, timeSlot")
-    LiveData<List<Course>> searchCoursesByLocation(String location);
-    
-    /**
-     * 根据周类型获取课程
-     * @param weekType 周类型，如"单周"、"双周"、"全周"
-     * @return 对应周类型的课程列表
-     */
-    @Query("SELECT * FROM courses WHERE weekType = :weekType ORDER BY dayOfWeek, timeSlot")
-    LiveData<List<Course>> getCoursesByWeekType(String weekType);
-    
-    /**
-     * 根据星期几和周类型获取课程
-     * @param dayOfWeek 星期几，如"周一"
-     * @param weekType 周类型，如"单周"、"双周"、"全周"
-     * @return 对应星期几和周类型的课程列表
-     */
-    @Query("SELECT * FROM courses WHERE dayOfWeek = :dayOfWeek AND weekType = :weekType ORDER BY timeSlot")
-    LiveData<List<Course>> getCoursesByDayAndWeekType(String dayOfWeek, String weekType);
     
     /**
      * 根据周数获取课程

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.njupt_coursetable.data.remote.api.CourseApiService;
-import com.example.njupt_coursetable.data.remote.api.ReminderApiService;
 
 import java.util.concurrent.TimeUnit;
 
@@ -40,11 +39,6 @@ public class RetrofitClient {
      * 课程API服务实例
      */
     private static CourseApiService courseApiService = null;
-    
-    /**
-     * 提醒API服务实例
-     */
-    private static ReminderApiService reminderApiService = null;
 
     /**
      * 获取Retrofit实例
@@ -98,18 +92,6 @@ public class RetrofitClient {
     }
 
     /**
-     * 获取提醒API服务实例
-     * @param context 应用上下文
-     * @return ReminderApiService实例
-     */
-    public static synchronized ReminderApiService getReminderApiService(Context context) {
-        if (reminderApiService == null) {
-            reminderApiService = getClient(context).create(ReminderApiService.class);
-        }
-        return reminderApiService;
-    }
-
-    /**
      * 更新服务器基础URL
      * @param newBaseUrl 新的基础URL
      */
@@ -120,7 +102,6 @@ public class RetrofitClient {
             retrofit = null;
             okHttpClient = null;
             courseApiService = null;
-            reminderApiService = null;
         }
     }
 }

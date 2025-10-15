@@ -22,36 +22,60 @@ public class CourseController {
     private CourseRepository courseRepository;
 
     /**
-     * 获取所有课程
+     * 根据周数查询课程
+     * @param weekNumber 周数，如"1"
+     * @return 该周的全部课程列表
      */
-    @GetMapping
-    public List<Course> getAllCourses() {
-        logger.info("Getting all courses");
-        return courseRepository.findAll();
+    @GetMapping("/week/{weekNumber}")
+    public List<Course> getCoursesByWeek(@PathVariable String weekNumber) {
+        logger.info("Getting courses for week: {}", weekNumber);
+        return courseRepository.findByWeekNumber(weekNumber);
     }
-
+    
     /**
-     * 根据ID获取课程
+     * 获取所有需要提醒的课程
+     * @return 需要提醒的课程列表
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
-        logger.info("Getting course with id: {}", id);
-        Optional<Course> course = courseRepository.findById(id);
-        return course.map(ResponseEntity::ok)
+    @GetMapping("/reminders")
+    public List<Course> getCoursesWithReminders() {
+        logger.info("Getting all courses with reminders");
+        return courseRepository.findByShouldReminderTrue();
+    }
+    
+    /**
+     * 更新课程的提醒状态
+     * @param id 课程ID
+     * @param shouldReminder 是否需要提醒
+     * @return 更新后的课程对象
+     */
+    @PutMapping("/{id}/reminder")
+    public ResponseEntity<Course> updateCourseReminderStatus(@PathVariable Long id, @RequestParam boolean shouldReminder) {
+        logger.info("Updating course reminder status with id: {} to: {}", id, shouldReminder);
+        
+        return courseRepository.findById(id)
+                .map(course -> {
+                    course.setShouldReminder(shouldReminder);
+                    return ResponseEntity.ok(courseRepository.save(course));
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    
     /**
      * 创建新课程
+     * @param course 课程对象
+     * @return 创建的课程对象
      */
     @PostMapping
     public Course createCourse(@RequestBody Course course) {
         logger.info("Creating new course: {}", course.getCourseName());
         return courseRepository.save(course);
     }
-
+    
     /**
      * 更新课程
+     * @param id 课程ID
+     * @param courseDetails 课程详情
+     * @return 更新后的课程对象
      */
     @PutMapping("/{id}")
     public ResponseEntity<Course> updateCourse(@PathVariable Long id, @RequestBody Course courseDetails) {
@@ -68,16 +92,17 @@ public class CourseController {
                     course.setContactInfo(courseDetails.getContactInfo());
                     course.setProperty(courseDetails.getProperty());
                     course.setRemarks(courseDetails.getRemarks());
-                    course.setReminderId(courseDetails.getReminderId());
                     course.setWeekType(courseDetails.getWeekType());
                     course.setShouldReminder(courseDetails.isShouldReminder());
                     return ResponseEntity.ok(courseRepository.save(course));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    
     /**
      * 删除课程
+     * @param id 课程ID
+     * @return 响应结果
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
@@ -89,68 +114,5 @@ public class CourseController {
                     return ResponseEntity.ok().<Void>build();
                 })
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    /**
-     * 根据星期几获取课程
-     */
-    @GetMapping("/day/{dayOfWeek}")
-    public List<Course> getCoursesByDayOfWeek(@PathVariable String dayOfWeek) {
-        logger.info("Getting courses for day: {}", dayOfWeek);
-        return courseRepository.findByDayOfWeek(dayOfWeek);
-    }
-
-    /**
-     * 根据课程名搜索课程
-     */
-    @GetMapping("/search/name/{courseName}")
-    public List<Course> searchCoursesByName(@PathVariable String courseName) {
-        logger.info("Searching courses by name: {}", courseName);
-        return courseRepository.findByCourseNameContaining(courseName);
-    }
-
-    /**
-     * 根据老师名搜索课程
-     */
-    @GetMapping("/search/teacher/{teacherName}")
-    public List<Course> searchCoursesByTeacher(@PathVariable String teacherName) {
-        logger.info("Searching courses by teacher: {}", teacherName);
-        return courseRepository.findByTeacherNameContaining(teacherName);
-    }
-
-    /**
-     * 根据地点搜索课程
-     */
-    @GetMapping("/search/location/{location}")
-    public List<Course> searchCoursesByLocation(@PathVariable String location) {
-        logger.info("Searching courses by location: {}", location);
-        return courseRepository.findByLocationContaining(location);
-    }
-    
-    /**
-     * 根据周数查询课程
-     */
-    @GetMapping("/week/{weekNumber}")
-    public List<Course> getCoursesByWeek(@PathVariable String weekNumber) {
-        logger.info("Getting courses for week: {}", weekNumber);
-        return courseRepository.findByWeekNumber(weekNumber);
-    }
-    
-    /**
-     * 根据周类型查询课程
-     */
-    @GetMapping("/type/{weekType}")
-    public List<Course> getCoursesByWeekType(@PathVariable String weekType) {
-        logger.info("Getting courses for week type: {}", weekType);
-        return courseRepository.findByWeekType(weekType);
-    }
-    
-    /**
-     * 获取所有需要提醒的课程
-     */
-    @GetMapping("/reminders")
-    public List<Course> getCoursesWithReminders() {
-        logger.info("Getting all courses with reminders");
-        return courseRepository.findByShouldReminderTrue();
     }
 }
