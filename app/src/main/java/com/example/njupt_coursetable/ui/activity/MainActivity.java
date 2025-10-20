@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,7 +44,7 @@ import java.util.Locale;
  * 主活动类
  * 应用程序的主界面，显示课程表和提醒
  */
-public class MainActivity extends AppCompatActivity implements OnCourseReminderListener {
+public class MainActivity extends AppCompatActivity implements OnCourseReminderListener, HalfPanel.OnCourseDeleteListener {
 
     private static final String TAG = "MainActivity";
     
@@ -71,6 +73,9 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
     
     // 课程表视图
     private CourseTableView courseTableView;
+    
+    // 添加课程按钮
+    private FloatingActionButton fabAddCourse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
         
         // 设置回调接口
         halfPanel.setOnCourseReminderListener(this);
+        halfPanel.setOnCourseDeleteListener(this);
         
         // 设置课程点击监听器
         courseTableView.setOnCourseClickListener(course -> {
@@ -167,6 +173,10 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
         );
         recyclerViewReminders.setAdapter(courseReminderAdapter);
         
+        // 设置添加课程按钮
+        fabAddCourse = binding.fabAddCourse;
+        fabAddCourse.setOnClickListener(v -> showAddCourseDialog());
+        
         // 设置底部导航
         BottomNavigationView bottomNavigationView = binding.bottomNavigation;
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -174,11 +184,15 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
                 // 显示课程表视图
                 binding.layoutCourses.setVisibility(View.VISIBLE);
                 binding.layoutReminders.setVisibility(View.GONE);
+                fabAddCourse.show(); // 显示FAB
                 return true;
             } else if (item.getItemId() == R.id.navigation_reminders) {
                 // 显示提醒列表
                 binding.layoutCourses.setVisibility(View.GONE);
                 binding.layoutReminders.setVisibility(View.VISIBLE);
+                fabAddCourse.hide(); // 隐藏FAB
+                // 刷新提醒列表
+                loadUpcomingReminders();
                 return true;
             }
             return false;
@@ -461,5 +475,95 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
         if (timeSlot.contains("6-7")) return "13:45:00";
         if (timeSlot.contains("8-9")) return "15:35:00";
         return "08:00:00";
+    }
+    
+    /**
+     * 加载即将到来的提醒
+     */
+    private void loadUpcomingReminders() {
+        courseViewModel.getUpcomingReminders().observe(this, reminders -> {
+            if (reminders != null && !reminders.isEmpty()) {
+                courseReminderAdapter.submitList(reminders);
+                binding.recyclerViewReminders.setVisibility(View.VISIBLE);
+                binding.textEmptyReminders.setVisibility(View.GONE);
+            } else {
+                courseReminderAdapter.submitList(new ArrayList<>());
+                binding.recyclerViewReminders.setVisibility(View.GONE);
+                binding.textEmptyReminders.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+    
+    /**
+     * 显示添加课程对话框
+     */
+    private void showAddCourseDialog() {
+        CourseDialog dialog = new CourseDialog(null); // null表示新建模式
+        dialog.setListener(course -> {
+            // 先重置操作结果
+            courseViewModel.resetOperationResult();
+            
+            // 使用operationResult观察操作结果
+            courseViewModel.getOperationResult().observe(MainActivity.this, new Observer<Boolean>() {
+                @Override
+                public void onChanged(Boolean success) {
+                    if (success != null) {
+                        // 移除观察者
+                        courseViewModel.getOperationResult().removeObserver(this);
+                        
+                        if (success) {
+                            Toast.makeText(MainActivity.this, "添加课程成功", Toast.LENGTH_SHORT).show();
+                            // 刷新当前周的课程数据
+                            syncDataFromServer();
+                        } else {
+                            Toast.makeText(MainActivity.this, "添加课程失败", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            });
+            
+            // 调用创建方法
+            courseViewModel.createCourseAsync(course);
+        });
+        dialog.show(getSupportFragmentManager(), "add_course");
+    }
+    
+    /**
+     * 实现HalfPanel.OnCourseDeleteListener接口
+     * 删除课程
+     */
+    @Override
+    public void onCourseDelete(Course course) {
+        if (course == null || course.getId() <= 0) {
+            Toast.makeText(this, "无效的课程", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        long courseId = course.getId();
+        
+        // 先重置操作结果
+        courseViewModel.resetOperationResult();
+        
+        // 使用operationResult观察操作结果
+        courseViewModel.getOperationResult().observe(MainActivity.this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean success) {
+                if (success != null) {
+                    // 移除观察者
+                    courseViewModel.getOperationResult().removeObserver(this);
+                    
+                    if (success) {
+                        Toast.makeText(MainActivity.this, "删除课程成功", Toast.LENGTH_SHORT).show();
+                        // 刷新当前周的课程数据
+                        syncDataFromServer();
+                    } else {
+                        Toast.makeText(MainActivity.this, "删除课程失败", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+        
+        // 调用删除方法
+        courseViewModel.deleteCourseAsync(courseId);
     }
 }

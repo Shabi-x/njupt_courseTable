@@ -210,5 +210,19 @@
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- 删除按钮 -->
+        <Button
+            android:id="@+id/button_delete_course"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/design_default_color_error"
+            android:text="删除这节课"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            style="@style/Widget.Material3.Button" />
+
     </LinearLayout>
 </FrameLayout>

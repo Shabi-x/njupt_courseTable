@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.example.njupt_coursetable.data.model.Course;
 import com.example.njupt_coursetable.data.repository.CourseRepository;
@@ -168,20 +169,55 @@ public class CourseViewModel extends AndroidViewModel {
     }
 
     /**
-     * 删除课程
+     * 删除课程（返回void，使用operationResult通知）
      * @param courseId 要删除的课程ID
      */
-    public void deleteCourse(long courseId) {
+    public void deleteCourseAsync(long courseId) {
         isLoading.setValue(true);
         
-        courseRepository.deleteCourse(courseId).observeForever(rowsAffected -> {
-            isLoading.setValue(false);
-            if (rowsAffected > 0) {
-                Log.d(TAG, "Course deleted: " + courseId);
-                operationResult.setValue(true);
-            } else {
-                Log.e(TAG, "Failed to delete course: " + courseId);
-                operationResult.setValue(false);
+        // 保存LiveData引用
+        LiveData<Integer> deleteLiveData = courseRepository.deleteCourse(courseId);
+        deleteLiveData.observeForever(new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer rowsAffected) {
+                // 移除观察者
+                deleteLiveData.removeObserver(this);
+                
+                isLoading.setValue(false);
+                boolean success = rowsAffected != null && rowsAffected > 0;
+                if (success) {
+                    Log.d(TAG, "Course deleted: " + courseId);
+                } else {
+                    Log.e(TAG, "Failed to delete course: " + courseId);
+                }
+                operationResult.setValue(success);
+            }
+        });
+    }
+    
+    /**
+     * 创建课程（返回void，使用operationResult通知）
+     * @param course 要创建的课程对象
+     */
+    public void createCourseAsync(Course course) {
+        isLoading.setValue(true);
+        
+        // 保存LiveData引用
+        LiveData<Long> insertLiveData = courseRepository.insertCourse(course);
+        insertLiveData.observeForever(new Observer<Long>() {
+            @Override
+            public void onChanged(Long id) {
+                // 移除观察者
+                insertLiveData.removeObserver(this);
+                
+                isLoading.setValue(false);
+                boolean success = id != null && id > 0;
+                if (success) {
+                    Log.d(TAG, "Course created with ID: " + id);
+                } else {
+                    Log.e(TAG, "Failed to create course");
+                }
+                operationResult.setValue(success);
             }
         });
     }

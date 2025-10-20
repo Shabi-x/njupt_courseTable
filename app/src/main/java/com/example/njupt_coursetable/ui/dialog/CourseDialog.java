@@ -109,21 +109,23 @@ public class CourseDialog extends DialogFragment {
             String timeSlot = course.getTimeSlot();
             if (timeSlot != null && !timeSlot.isEmpty()) {
                 // 如果timeSlot是"1-2节"这样的格式，转换为对应的时间段
-                String[] timeSlots = getResources().getStringArray(R.array.time_slots);
-                for (int i = 0; i < timeSlots.length; i++) {
-                    if (timeSlots[i].contains("第" + timeSlot.split("-")[0] + "节")) {
-                        spinnerStartTime.setSelection(i);
-                        // 如果是连续两节课，设置结束时间
-                        if (timeSlot.contains("-")) {
-                            String endSlot = timeSlot.split("-")[1];
-                            for (int j = 0; j < timeSlots.length; j++) {
-                                if (timeSlots[j].contains("第" + endSlot + "节")) {
-                                    spinnerEndTime.setSelection(j);
-                                    break;
-                                }
-                            }
+                String[] parts = timeSlot.replace("节", "").split("-");
+                if (parts.length > 0) {
+                    try {
+                        int startSlot = Integer.parseInt(parts[0].trim());
+                        int endSlot = parts.length > 1 ? Integer.parseInt(parts[1].trim()) : startSlot;
+                        
+                        // Spinner索引比节次少1（第1节对应索引0）
+                        if (startSlot >= 1 && startSlot <= 9) {
+                            spinnerStartTime.setSelection(startSlot - 1);
                         }
-                        break;
+                        if (endSlot >= 1 && endSlot <= 9) {
+                            spinnerEndTime.setSelection(endSlot - 1);
+                        }
+                    } catch (NumberFormatException e) {
+                        // 解析失败，使用默认值
+                        spinnerStartTime.setSelection(0);
+                        spinnerEndTime.setSelection(1);
                     }
                 }
             }
@@ -185,6 +187,11 @@ public class CourseDialog extends DialogFragment {
             } else {
                 // 创建新课程
                 newCourse = new Course();
+                // 设置默认值
+                newCourse.setProperty("必修");
+                newCourse.setWeekType("全周");
+                newCourse.setShouldReminder(false);
+                newCourse.setRemarks("");
             }
 
             newCourse.setCourseName(courseName);
@@ -192,6 +199,12 @@ public class CourseDialog extends DialogFragment {
             newCourse.setTeacherName(teacher);
             newCourse.setWeekRange(weeks);
             newCourse.setDayOfWeek(dayOfWeek);
+            
+            // 设置联系方式（简单生成邮箱）
+            if (course == null) {
+                String email = teacher.toLowerCase().replace(" ", "") + "@njupt.edu.cn";
+                newCourse.setContactInfo(email);
+            }
             
             // 将选择的时间段转换为"1-2节"格式
             String startSlot = "";

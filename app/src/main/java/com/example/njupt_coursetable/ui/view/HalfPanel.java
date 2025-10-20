@@ -7,10 +7,12 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Switch;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import com.example.njupt_coursetable.R;
 import com.example.njupt_coursetable.data.model.Course;
 
@@ -28,10 +30,12 @@ public class HalfPanel extends FrameLayout {
     private TextView courseNoteText;
     private View backgroundOverlay;
     private Switch enableReminderSwitch;
+    private Button buttonDeleteCourse;
     
     private OnCloseListener onCloseListener;
     private Course currentCourse;
     private OnCourseReminderListener onCourseReminderListener;
+    private OnCourseDeleteListener onCourseDeleteListener;
     
     public HalfPanel(@NonNull Context context) {
         super(context);
@@ -60,6 +64,7 @@ public class HalfPanel extends FrameLayout {
         courseNoteText = findViewById(R.id.text_course_note);
         backgroundOverlay = findViewById(R.id.background_overlay);
         enableReminderSwitch = findViewById(R.id.switch_enable_reminder);
+        buttonDeleteCourse = findViewById(R.id.button_delete_course);
         
         // 设置背景遮罩点击事件
         backgroundOverlay.setOnClickListener(v -> {
@@ -68,8 +73,32 @@ public class HalfPanel extends FrameLayout {
             }
         });
         
+        // 设置删除按钮点击事件
+        buttonDeleteCourse.setOnClickListener(v -> {
+            if (currentCourse != null) {
+                showDeleteConfirmDialog();
+            }
+        });
+        
         // 初始状态为隐藏
         setVisibility(GONE);
+    }
+    
+    /**
+     * 显示删除确认对话框
+     */
+    private void showDeleteConfirmDialog() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("删除课程")
+                .setMessage("确定要删除《" + currentCourse.getCourseName() + "》这节课吗？")
+                .setPositiveButton("删除", (dialog, which) -> {
+                    if (onCourseDeleteListener != null) {
+                        onCourseDeleteListener.onCourseDelete(currentCourse);
+                    }
+                    hidePanel();
+                })
+                .setNegativeButton("取消", null)
+                .show();
     }
     
     /**
@@ -129,6 +158,14 @@ public class HalfPanel extends FrameLayout {
     }
     
     /**
+     * 设置课程删除监听器
+     * @param listener 监听器
+     */
+    public void setOnCourseDeleteListener(OnCourseDeleteListener listener) {
+        this.onCourseDeleteListener = listener;
+    }
+    
+    /**
      * 隐藏面板
      */
     public void hidePanel() {
@@ -148,5 +185,12 @@ public class HalfPanel extends FrameLayout {
      */
     public interface OnCloseListener {
         void onClose();
+    }
+    
+    /**
+     * 课程删除监听器接口
+     */
+    public interface OnCourseDeleteListener {
+        void onCourseDelete(Course course);
     }
 }
