@@ -1,24 +1,7 @@
 package com.example.njupt_coursetable;
 
-import androidx.appcompat.app.AppCompatActivity;
+// 该文件为早期示例入口，现已被 ui.activity.MainActivity 取代
+// 保留占位防止包名冲突，不再参与编译（无Activity声明）
 
-import android.os.Bundle;
-import android.widget.FrameLayout;
-import com.example.njupt_coursetable.ui.view.CourseTableView;
-import com.example.njupt_coursetable.ui.view.HalfPanel;
-
-public class MainActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        
-        // 获取CourseTableView和HalfPanel的引用
-        CourseTableView courseTableView = findViewById(R.id.course_table_view);
-        HalfPanel halfPanel = findViewById(R.id.half_panel);
-        
-        // 将HalfPanel设置给CourseTableView
-        courseTableView.setHalfPanel(halfPanel);
-    }
+public class MainActivity {
 }

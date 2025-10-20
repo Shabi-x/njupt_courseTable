@@ -96,6 +96,13 @@ public class CourseViewModel extends AndroidViewModel {
     public LiveData<List<Course>> getCoursesByWeekNumber(String weekNumber) {
         return courseRepository.getCoursesByWeekNumber(weekNumber);
     }
+
+    /**
+     * 从服务器按周同步课程并返回结果（仅内存，不写入本地）
+     */
+    public LiveData<List<Course>> syncCoursesByWeekFromServer(String weekNumber) {
+        return courseRepository.syncCoursesByWeekFromServer(weekNumber);
+    }
     
     /**
      * 获取所有需要提醒的课程

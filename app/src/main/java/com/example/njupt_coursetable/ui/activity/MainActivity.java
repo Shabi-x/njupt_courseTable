@@ -189,22 +189,7 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
      * 初始化观察者
      */
     private void initObservers() {
-        // 观察课程列表变化
-        courseViewModel.getAllCourses().observe(this, courses -> {
-            Log.d(TAG, "Courses updated: " + (courses != null ? courses.size() : 0) + " items");
-            
-            // 设置课程数据到课程表视图
-            if (courses != null && !courses.isEmpty()) {
-                courseTableView.setCourses(courses);
-                binding.courseTableView.setVisibility(View.VISIBLE);
-                binding.textEmptyCourses.setVisibility(View.GONE);
-            } else {
-                // 如果没有课程数据，显示空状态
-                courseTableView.setCourses(new ArrayList<>());
-                binding.courseTableView.setVisibility(View.VISIBLE);
-                binding.textEmptyCourses.setVisibility(View.VISIBLE);
-            }
-        });
+        // 移除对本地所有课程的覆盖性观察，避免本地空数据清空服务端按周结果
         
         // 观察课程提醒列表变化
         courseViewModel.getCoursesWithReminder().observe(this, courses -> {
@@ -245,8 +230,12 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
      * 从服务器同步数据
      */
     private void syncDataFromServer() {
-        // 直接从服务器同步数据，不使用本地示例数据
-        courseViewModel.syncAllCoursesFromServer();
+        // 首次进入默认拉取当前周与提醒
+        courseViewModel.syncCoursesByWeekFromServer(String.valueOf(currentWeek)).observe(this, weekCourses -> {
+            if (weekCourses != null) {
+                courseTableView.setCourses(weekCourses);
+            }
+        });
         courseViewModel.syncCoursesWithRemindersFromServer();
     }
 
@@ -320,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
         // 设置当前选中项
         binding.spinnerWeekSelector.setSelection(currentWeek - 1);
         
-        // 设置选择监听器
+        // 设置选择监听器（切换周时，从服务端拉取该周课程并只显示这周）
         binding.spinnerWeekSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -332,6 +321,15 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
                 
                 // 更新日期显示
                 setWeekDateDisplay();
+
+                // 拉取该周课程并展示
+                courseViewModel.syncCoursesByWeekFromServer(String.valueOf(currentWeek)).observe(MainActivity.this, weekCourses -> {
+                    if (weekCourses != null) {
+                        courseTableView.setCourses(weekCourses);
+                    } else {
+                        courseTableView.setCourses(new ArrayList<>());
+                    }
+                });
             }
             
             @Override
