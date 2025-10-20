@@ -11,6 +11,8 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.njupt_coursetable.data.model.Course;
 import com.example.njupt_coursetable.data.repository.CourseRepository;
+import com.example.njupt_coursetable.data.repository.ReminderRepository;
+import com.example.njupt_coursetable.data.model.Reminder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +31,7 @@ public class CourseViewModel extends AndroidViewModel {
      * 课程仓库实例
      */
     private final CourseRepository courseRepository;
+    private final ReminderRepository reminderRepository;
     
     /**
      * 所有课程的LiveData
@@ -53,6 +56,7 @@ public class CourseViewModel extends AndroidViewModel {
     public CourseViewModel(@NonNull Application application, CourseRepository courseRepository) {
         super(application);
         this.courseRepository = courseRepository;
+        this.reminderRepository = ReminderRepository.getInstance(application);
         this.allCourses = courseRepository.getAllCourses();
     }
 
@@ -110,6 +114,19 @@ public class CourseViewModel extends AndroidViewModel {
      */
     public LiveData<List<Course>> getCoursesWithReminder() {
         return courseRepository.getCoursesWithReminder();
+    }
+
+    // reminders
+    public LiveData<List<Reminder>> getUpcomingReminders() {
+        return reminderRepository.getUpcomingReminders();
+    }
+
+    public LiveData<Boolean> createReminder(long courseId, String courseDate, String startTime) {
+        return reminderRepository.createReminder(courseId, courseDate, startTime);
+    }
+
+    public LiveData<Boolean> deleteReminderByCourseAndDate(long courseId, String courseDate) {
+        return reminderRepository.deleteReminderByCourseAndDate(courseId, courseDate);
     }
 
     /**

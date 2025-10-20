@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.njupt_coursetable.R;
 import com.example.njupt_coursetable.data.model.Course;
-import com.example.njupt_coursetable.utils.TimeUtils;
+import com.example.njupt_coursetable.data.model.Reminder;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -23,7 +23,7 @@ import java.util.Locale;
  * 课程提醒列表适配器
  * 用于在RecyclerView中显示需要提醒的课程列表
  */
-public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAdapter.CourseReminderViewHolder> {
+public class CourseReminderAdapter extends ListAdapter<Reminder, CourseReminderAdapter.CourseReminderViewHolder> {
 
     /**
      * 课程点击监听器
@@ -42,22 +42,28 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
     /**
      * DiffUtil回调，用于计算列表差异
      */
-    private static final DiffUtil.ItemCallback<Course> DIFF_CALLBACK = new DiffUtil.ItemCallback<Course>() {
+    private static final DiffUtil.ItemCallback<Reminder> DIFF_CALLBACK = new DiffUtil.ItemCallback<Reminder>() {
         @Override
-        public boolean areItemsTheSame(@NonNull Course oldItem, @NonNull Course newItem) {
+        public boolean areItemsTheSame(@NonNull Reminder oldItem, @NonNull Reminder newItem) {
             return oldItem.getId() == newItem.getId();
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull Course oldItem, @NonNull Course newItem) {
-            return oldItem.getCourseName().equals(newItem.getCourseName()) &&
-                    oldItem.getTeacherName().equals(newItem.getTeacherName()) &&
-                    oldItem.getLocation().equals(newItem.getLocation()) &&
-                    oldItem.getDayOfWeek().equals(newItem.getDayOfWeek()) &&
-                    oldItem.getTimeSlot().equals(newItem.getTimeSlot()) &&
-                    oldItem.isShouldReminder() == newItem.isShouldReminder();
+        public boolean areContentsTheSame(@NonNull Reminder oldItem, @NonNull Reminder newItem) {
+            return oldItem.getCourseDate().equals(newItem.getCourseDate()) &&
+                    oldItem.getStartTime().equals(newItem.getStartTime()) &&
+                    oldItem.getCourseId() == newItem.getCourseId() &&
+                    safeEquals(oldItem.getCourseName(), newItem.getCourseName()) &&
+                    safeEquals(oldItem.getLocation(), newItem.getLocation()) &&
+                    safeEquals(oldItem.getDayOfWeek(), newItem.getDayOfWeek()) &&
+                    safeEquals(oldItem.getTimeSlot(), newItem.getTimeSlot());
         }
     };
+
+    private static boolean safeEquals(String a, String b) {
+        if (a == null) return b == null;
+        return a.equals(b);
+    }
 
     @NonNull
     @Override
@@ -69,8 +75,8 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
 
     @Override
     public void onBindViewHolder(@NonNull CourseReminderViewHolder holder, int position) {
-        Course currentCourse = getItem(position);
-        holder.bind(currentCourse);
+        Reminder reminder = getItem(position);
+        holder.bind(reminder);
     }
 
     /**
@@ -98,7 +104,16 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (onCourseReminderClickListener != null && position != RecyclerView.NO_POSITION) {
-                    onCourseReminderClickListener.onCourseReminderClick(getItem(position));
+                    Reminder r = getItem(position);
+                    if (r != null) {
+                        Course c = new Course();
+                        c.setId(r.getCourseId());
+                        c.setCourseName(r.getCourseName());
+                        c.setLocation(r.getLocation());
+                        c.setDayOfWeek(r.getDayOfWeek());
+                        c.setTimeSlot(r.getTimeSlot());
+                        onCourseReminderClickListener.onCourseReminderClick(c);
+                    }
                 }
             });
         }
@@ -107,19 +122,12 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
          * 绑定数据到视图
          * @param course 课程对象
          */
-        public void bind(Course course) {
-            textViewCourseName.setText(course.getCourseName());
-            textViewTeacher.setText(course.getTeacherName());
-            textViewLocation.setText(course.getLocation());
-            
-            // 设置时间信息
-            String dayOfWeek = course.getDayOfWeek(); // 直接获取字符串形式的星期几
-            String timeRange = course.getTimeSlot(); // 直接获取时间段字符串
-            textViewTimeInfo.setText(dayOfWeek + " " + timeRange);
-            
-            // 计算下次上课时间
-            String nextClassInfo = calculateNextClassTime(course);
-            textViewNextClass.setText(nextClassInfo);
+        public void bind(Reminder reminder) {
+            textViewCourseName.setText(reminder.getCourseName());
+            textViewTeacher.setText("");
+            textViewLocation.setText(reminder.getLocation());
+            textViewTimeInfo.setText(reminder.getDayOfWeek() + " " + reminder.getTimeSlot());
+            textViewNextClass.setText(formatCountdown(reminder.getCourseDate(), reminder.getStartTime()));
         }
         
         /**
@@ -127,32 +135,20 @@ public class CourseReminderAdapter extends ListAdapter<Course, CourseReminderAda
          * @param course 课程对象
          * @return 下次上课时间字符串
          */
-        private String calculateNextClassTime(Course course) {
-            // 由于Course类中的dayOfWeek是字符串类型，我们需要将其转换为数字
-            String dayOfWeekStr = course.getDayOfWeek();
-            int courseDayOfWeek = convertDayOfWeekStringToInt(dayOfWeekStr);
-            
-            Calendar now = Calendar.getInstance();
-            int currentDayOfWeek = now.get(Calendar.DAY_OF_WEEK);
-            // 转换为我们的格式（周日=0，周一=1...周六=6）
-            int currentDay = currentDayOfWeek == Calendar.SUNDAY ? 0 : currentDayOfWeek - 1;
-            
-            // 计算距离下次上课还有几天
-            int daysUntilNextClass = (courseDayOfWeek - currentDay + 7) % 7;
-            
-            // 计算下次上课的具体日期
-            Calendar nextClass = Calendar.getInstance();
-            nextClass.add(Calendar.DAY_OF_MONTH, daysUntilNextClass);
-            
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM月dd日 E", Locale.getDefault());
-            String dateStr = dateFormat.format(nextClass.getTime());
-            
-            if (daysUntilNextClass == 0) {
-                return "今天 " + dateStr;
-            } else if (daysUntilNextClass == 1) {
-                return "明天 " + dateStr;
-            } else {
-                return daysUntilNextClass + "天后 " + dateStr;
+        private String formatCountdown(String date, String startTime) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                Date target = sdf.parse(date + " " + startTime);
+                long diff = target.getTime() - System.currentTimeMillis();
+                if (diff <= 0) return "即将开始";
+                long minutes = diff / 60000;
+                long hours = minutes / 60; minutes %= 60;
+                long days = hours / 24; hours %= 24;
+                if (days > 0) return days + "天 " + hours + "小时";
+                if (hours > 0) return hours + "小时 " + minutes + "分钟";
+                return minutes + "分钟";
+            } catch (Exception e) {
+                return "--";
             }
         }
         

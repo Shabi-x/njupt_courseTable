@@ -1,5 +1,10 @@
+/Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/config/DataInitializer.java
 /Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/model/Course.java
 /Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/controller/CourseController.java
 /Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/repository/CourseRepository.java
+/Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/controller/dto/ReminderDTO.java
+/Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/controller/ReminderController.java
 /Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/NjuptCoursetableServerApplication.java
+/Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/model/Reminder.java
+/Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/repository/ReminderRepository.java
 /Users/Shabix/AndroidStudioProjects/njupt_courseTable/server/src/main/java/com/example/njupt_coursetable/config/CorsConfig.java

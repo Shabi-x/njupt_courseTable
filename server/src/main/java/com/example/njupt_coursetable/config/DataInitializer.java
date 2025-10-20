@@ -26,90 +26,46 @@ public class DataInitializer {
                 return;
             }
 
-            logger.info("Seeding database with mock courses for 18 weeks starting 2025-09-01...");
+            logger.info("Seeding database with EE courses for 18 weeks...");
 
+            // 真实的大三电子信息专业课程
+            String[] courseNames = {
+                "信号与系统", "数字信号处理", "通信原理", "微机原理与接口技术", 
+                "电磁场与电磁波", "高频电子线路", "数字图像处理", "嵌入式系统设计",
+                "EDA技术", "数据通信与计算机网络", "专业英语", "MATLAB课程设计",
+                "数字信号处理实验", "通信原理实验", "微机原理实验", "C语言程序设计"
+            };
+            String[] teachers = {"王建华", "李明", "张伟", "陈静", "刘强", "赵敏", "孙丽", "周杰", "吴洋", "郑浩", "冯涛", "黄磊", "李娜", "田芳"};
+            String[] locations = {"教一-203", "教二-105", "教一-301", "实验楼-401", "教二-208", "教一-205", "教二-106", "实验楼-405", "实验楼-501", "教二-302", "教二-201", "机房-A201", "实验楼-302", "实验楼-303"};
             String[] days = {"周一", "周二", "周三", "周四", "周五"};
-            String[] teachers = {"张老师", "李老师", "王老师", "赵老师", "陈老师"};
-            String[] locations = {"教一-101", "教一-102", "教二-201", "教二-202", "实验楼-301"};
-            String[] properties = {"必修", "选修"};
-            String[] timeSlots = {"1-2节", "3-4节", "6-7节", "8-9节"}; // 上午/下午常见节次
+            String[] timeSlots = {"1-2节", "3-4节", "6-7节", "8-9节"};
+            String[] properties = {"必修", "选修", "实验", "实践"};
 
             Random random = new Random(20250901);
             List<Course> toSave = new ArrayList<>();
 
+            // 为18周生成课程
             for (int week = 1; week <= 18; week++) {
-                // 每周生成 10-15 门随机课程，均匀分布：5天*（上午/下午）
-                int coursesThisWeek = 10 + random.nextInt(6); // 10..15
-
-                int basePerDay = coursesThisWeek / 5; // 每天基础节数
-                int remainder = coursesThisWeek % 5;   // 前 remainder 天 +1
-
-                for (int dayIdx = 0; dayIdx < 5; dayIdx++) { // 周一..周五
-                    String dayOfWeek = days[dayIdx];
-
-                    int countForThisDay = basePerDay + (dayIdx < remainder ? 1 : 0);
-
-                    // 上/下午时间段分组
-                    String[] morning = {"1-2节", "3-4节"};
-                    String[] afternoon = {"6-7节", "8-9节"};
-
-                    // 尽量一半上午一半下午
-                    int morningCount = countForThisDay / 2;
-                    int afternoonCount = countForThisDay - morningCount;
-
-                    // 上午课程
-                    for (int i = 0; i < morningCount; i++) {
-                        String courseName = "课程" + (char)('A' + random.nextInt(26));
-                        String timeSlot = morning[random.nextInt(morning.length)];
-                        String teacher = teachers[random.nextInt(teachers.length)];
-                        String location = locations[random.nextInt(locations.length)];
-                        String property = properties[random.nextInt(properties.length)];
-
-                        Course course = new Course();
-                        course.setCourseName(courseName);
-                        course.setLocation(location);
-                        course.setWeekRange(String.valueOf(week));
-                        course.setDayOfWeek(dayOfWeek);
-                        course.setTimeSlot(timeSlot);
-                        course.setTeacherName(teacher);
-                        course.setContactInfo("teacher@example.com");
-                        course.setProperty(property);
-                        course.setRemarks("模拟数据");
-                        course.setWeekType("全周");
-                        course.setShouldReminder(false);
-                        toSave.add(course);
-                    }
-
-                    // 下午课程
-                    for (int i = 0; i < afternoonCount; i++) {
-                        String courseName = "课程" + (char)('A' + random.nextInt(26));
-                        String timeSlot = afternoon[random.nextInt(afternoon.length)];
-                        String teacher = teachers[random.nextInt(teachers.length)];
-                        String location = locations[random.nextInt(locations.length)];
-                        String property = properties[random.nextInt(properties.length)];
-
-                        Course course = new Course();
-                        course.setCourseName(courseName);
-                        course.setLocation(location);
-                        course.setWeekRange(String.valueOf(week));
-                        course.setDayOfWeek(dayOfWeek);
-                        course.setTimeSlot(timeSlot);
-                        course.setTeacherName(teacher);
-                        course.setContactInfo("teacher@example.com");
-                        course.setProperty(property);
-                        course.setRemarks("模拟数据");
-                        course.setWeekType("全周");
-                        course.setShouldReminder(false);
-                        toSave.add(course);
-                    }
+                int coursesThisWeek = 10 + random.nextInt(6); // 10-15门课程
+                for (int i = 0; i < coursesThisWeek; i++) {
+                    Course course = new Course();
+                    course.setCourseName(courseNames[random.nextInt(courseNames.length)]);
+                    course.setLocation(locations[random.nextInt(locations.length)]);
+                    course.setWeekRange(String.valueOf(week));
+                    course.setDayOfWeek(days[random.nextInt(days.length)]);
+                    course.setTimeSlot(timeSlots[random.nextInt(timeSlots.length)]);
+                    course.setTeacherName(teachers[random.nextInt(teachers.length)]);
+                    course.setContactInfo(teachers[random.nextInt(teachers.length)].replace("老师", "") + "@njupt.edu.cn");
+                    course.setProperty(properties[random.nextInt(properties.length)]);
+                    course.setRemarks("大三电子信息专业课程");
+                    course.setWeekType("全周");
+                    course.setShouldReminder(false);
+                    toSave.add(course);
                 }
             }
 
             courseRepository.saveAll(toSave);
-            logger.info("Seeded {} courses.", toSave.size());
+            logger.info("Seeded {} EE courses for 18 weeks.", toSave.size());
         };
     }
 }
-
-
-

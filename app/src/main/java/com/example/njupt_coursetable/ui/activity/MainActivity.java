@@ -191,12 +191,11 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
     private void initObservers() {
         // 移除对本地所有课程的覆盖性观察，避免本地空数据清空服务端按周结果
         
-        // 观察课程提醒列表变化
-        courseViewModel.getCoursesWithReminder().observe(this, courses -> {
-            Log.d(TAG, "Courses with reminders updated: " + (courses != null ? courses.size() : 0) + " items");
-            
-            if (courses != null && !courses.isEmpty()) {
-                courseReminderAdapter.submitList(courses);
+        // 观察远程提醒列表变化
+        courseViewModel.getUpcomingReminders().observe(this, reminders -> {
+            Log.d(TAG, "Upcoming reminders: " + (reminders != null ? reminders.size() : 0));
+            if (reminders != null && !reminders.isEmpty()) {
+                courseReminderAdapter.submitList(reminders);
                 binding.textEmptyReminders.setVisibility(View.GONE);
                 binding.recyclerViewReminders.setVisibility(View.VISIBLE);
             } else {
@@ -236,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
                 courseTableView.setCourses(weekCourses);
             }
         });
-        courseViewModel.syncCoursesWithRemindersFromServer();
+        refreshUpcomingReminders();
     }
 
     /**
@@ -383,14 +382,84 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
     
     @Override
     public void onCourseReminderChanged(Course course, boolean shouldReminder) {
-        if (course != null) {
-            if (shouldReminder) {
-                // 添加课程提醒
-                courseViewModel.addCourseReminder(course.getId());
-            } else {
-                // 移除课程提醒
-                courseViewModel.removeCourseReminder(course.getId());
-            }
+        if (course == null) return;
+
+        String courseDate = computeCourseDateForCurrentWeek(course.getDayOfWeek()); // yyyy-MM-dd
+        String startTime = mapStartTimeByTimeSlot(course.getTimeSlot()); // HH:mm:ss
+
+        if (shouldReminder) {
+            courseViewModel.createReminder(course.getId(), courseDate, startTime).observe(this, ok -> {
+                Toast.makeText(this, ok != null && ok ? "提醒已添加" : "添加提醒失败", Toast.LENGTH_SHORT).show();
+                refreshUpcomingReminders();
+            });
+        } else {
+            courseViewModel.deleteReminderByCourseAndDate(course.getId(), courseDate).observe(this, ok -> {
+                Toast.makeText(this, ok != null && ok ? "提醒已移除" : "移除提醒失败", Toast.LENGTH_SHORT).show();
+                refreshUpcomingReminders();
+            });
         }
+    }
+
+    // 重新获取即将到来的提醒并渲染
+    private void refreshUpcomingReminders() {
+        courseViewModel.getUpcomingReminders().observe(this, reminders -> {
+            if (reminders != null && !reminders.isEmpty()) {
+                courseReminderAdapter.submitList(reminders);
+                binding.textEmptyReminders.setVisibility(View.GONE);
+                binding.recyclerViewReminders.setVisibility(View.VISIBLE);
+            } else {
+                courseReminderAdapter.submitList(new ArrayList<>());
+                binding.textEmptyReminders.setVisibility(View.VISIBLE);
+                binding.recyclerViewReminders.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    // 计算下一次该星期几对应的具体日期（yyyy-MM-dd）
+    // 如果计算出的日期已经过去，则返回下一周的同一天
+    private String computeCourseDateForCurrentWeek(String dayOfWeekStr) {
+        int dayOffset = mapWeekdayToOffset(dayOfWeekStr); // 周一=0 .. 周日=6
+        Calendar cal = Calendar.getInstance();
+        cal.set(2025, Calendar.SEPTEMBER, 1, 0, 0, 0); // 2025-09-01
+        cal.set(Calendar.MILLISECOND, 0);
+        int days = (currentWeek - 1) * 7 + dayOffset;
+        cal.add(Calendar.DAY_OF_MONTH, days);
+        
+        // 如果计算出的日期已经过去，则找到下一次上课的日期
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        
+        while (cal.before(today)) {
+            cal.add(Calendar.WEEK_OF_YEAR, 1); // 加一周
+        }
+        
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return fmt.format(cal.getTime());
+    }
+
+    private int mapWeekdayToOffset(String s) {
+        if (s == null) return 0;
+        switch (s) {
+            case "周一": return 0;
+            case "周二": return 1;
+            case "周三": return 2;
+            case "周四": return 3;
+            case "周五": return 4;
+            case "周六": return 5;
+            case "周日": return 6;
+            default: return 0;
+        }
+    }
+
+    private String mapStartTimeByTimeSlot(String timeSlot) {
+        if (timeSlot == null) return "08:00:00";
+        if (timeSlot.contains("1-2")) return "08:00:00";
+        if (timeSlot.contains("3-4")) return "09:50:00";
+        if (timeSlot.contains("6-7")) return "13:45:00";
+        if (timeSlot.contains("8-9")) return "15:35:00";
+        return "08:00:00";
     }
 }
