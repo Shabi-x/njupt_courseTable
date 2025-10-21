@@ -181,33 +181,28 @@ public class CourseRepository {
     public LiveData<Integer> deleteCourse(long courseId) {
         MutableLiveData<Integer> result = new MutableLiveData<>();
         
-        executorService.execute(() -> {
-            // 先从本地数据库获取课程信息
-            Course course = courseDao.getCourseByIdSync(courseId);
+        // 直接从服务器删除，不依赖本地数据库
+        courseApiService.deleteCourse(courseId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Course deleted from server: " + courseId);
+                    // 同时删除本地数据库中的课程（如果存在）
+                    executorService.execute(() -> {
+                        int rowsAffected = courseDao.deleteById(courseId);
+                        Log.d(TAG, "Deleted " + rowsAffected + " rows from local database");
+                    });
+                    result.postValue(1); // 返回成功
+                } else {
+                    Log.e(TAG, "Failed to delete course from server: " + response.message());
+                    result.postValue(0); // 返回失败
+                }
+            }
             
-            if (course != null) {
-                // 删除本地数据库中的课程
-                int rowsAffected = courseDao.deleteById(courseId);
-                result.postValue(rowsAffected);
-                
-                // 然后从服务器删除
-                courseApiService.deleteCourse(courseId).enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            Log.d(TAG, "Course deleted from server: " + courseId);
-                        } else {
-                            Log.e(TAG, "Failed to delete course from server: " + response.message());
-                        }
-                    }
-                    
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        Log.e(TAG, "Error deleting course from server", t);
-                    }
-                });
-            } else {
-                result.postValue(0);
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e(TAG, "Error deleting course from server", t);
+                result.postValue(0); // 返回失败
             }
         });
         

@@ -80,11 +80,37 @@ public abstract class AppDatabase extends RoomDatabase {
 
     /**
      * 数据库迁移策略
-     * 从版本3到4的迁移：删除reminders表
+     * 从版本3到4的迁移：删除reminders表，移除courses表中的reminderId字段
      */
     static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
+            // 创建新的courses表（没有reminderId字段和外键）
+            database.execSQL("CREATE TABLE IF NOT EXISTS courses_new (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "courseName TEXT, " +
+                    "location TEXT, " +
+                    "weekRange TEXT, " +
+                    "dayOfWeek TEXT, " +
+                    "timeSlot TEXT, " +
+                    "teacherName TEXT, " +
+                    "contactInfo TEXT, " +
+                    "property TEXT, " +
+                    "remarks TEXT, " +
+                    "weekType TEXT, " +
+                    "color INTEGER NOT NULL DEFAULT 0, " +
+                    "shouldReminder INTEGER NOT NULL DEFAULT 0)");
+            
+            // 复制数据（排除reminderId字段）
+            database.execSQL("INSERT INTO courses_new (id, courseName, location, weekRange, dayOfWeek, timeSlot, teacherName, contactInfo, property, remarks, weekType, color, shouldReminder) " +
+                    "SELECT id, courseName, location, weekRange, dayOfWeek, timeSlot, teacherName, contactInfo, property, remarks, weekType, color, shouldReminder FROM courses");
+            
+            // 删除旧表
+            database.execSQL("DROP TABLE courses");
+            
+            // 重命名新表
+            database.execSQL("ALTER TABLE courses_new RENAME TO courses");
+            
             // 删除reminders表
             database.execSQL("DROP TABLE IF EXISTS reminders");
         }

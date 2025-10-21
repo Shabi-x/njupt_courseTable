@@ -560,6 +560,11 @@ public class CourseTableView extends View {
         invalidate();
     }
 
+    // 获取课程列表
+    public List<Course> getCourses() {
+        return courses;
+    }
+
     // 设置当前周数
     public void setCurrentWeek(int week) {
         this.currentWeek = week;

@@ -257,14 +257,31 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
      * @param course 课程对象，如果为null则表示新建课程
      */
     private void showCourseDialog(Course course) {
-        CourseDialog dialog = new CourseDialog(course);
+        // 获取当前周的课程列表用于冲突检测
+        List<Course> currentWeekCourses = courseTableView.getCourses();
+        
+        CourseDialog dialog = new CourseDialog(course, currentWeekCourses);
         dialog.setListener(newCourse -> {
             if (course == null) {
                 // 添加新课程
-                courseViewModel.insertCourse(newCourse);
+                courseViewModel.insertCourse(newCourse).observe(MainActivity.this, id -> {
+                    if (id != null && id > 0) {
+                        Toast.makeText(MainActivity.this, "添加课程成功", Toast.LENGTH_SHORT).show();
+                        refreshCoursesForCurrentWeek();
+                    } else {
+                        Toast.makeText(MainActivity.this, "添加课程失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
             } else {
                 // 更新现有课程
-                courseViewModel.updateCourse(newCourse);
+                courseViewModel.updateCourse(newCourse).observe(MainActivity.this, rowsAffected -> {
+                    if (rowsAffected != null && rowsAffected > 0) {
+                        Toast.makeText(MainActivity.this, "更新课程成功", Toast.LENGTH_SHORT).show();
+                        refreshCoursesForCurrentWeek();
+                    } else {
+                        Toast.makeText(MainActivity.this, "更新课程失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
         dialog.show(getSupportFragmentManager(), "CourseDialog");
@@ -495,35 +512,38 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
     }
     
     /**
+     * 刷新当前周的课程数据
+     */
+    private void refreshCoursesForCurrentWeek() {
+        courseViewModel.syncCoursesByWeekFromServer(String.valueOf(currentWeek)).observe(this, weekCourses -> {
+            if (weekCourses != null) {
+                courseTableView.setCourses(weekCourses);
+            }
+        });
+    }
+    
+    /**
      * 显示添加课程对话框
      */
     private void showAddCourseDialog() {
-        CourseDialog dialog = new CourseDialog(null); // null表示新建模式
+        // 获取当前周的课程列表用于冲突检测
+        List<Course> currentWeekCourses = courseTableView.getCourses();
+        
+        CourseDialog dialog = new CourseDialog(null, currentWeekCourses); // null表示新建模式
+        dialog.setCurrentWeek(currentWeek); // 设置当前周数
         dialog.setListener(course -> {
-            // 先重置操作结果
-            courseViewModel.resetOperationResult();
-            
-            // 使用operationResult观察操作结果
-            courseViewModel.getOperationResult().observe(MainActivity.this, new Observer<Boolean>() {
-                @Override
-                public void onChanged(Boolean success) {
-                    if (success != null) {
-                        // 移除观察者
-                        courseViewModel.getOperationResult().removeObserver(this);
-                        
-                        if (success) {
-                            Toast.makeText(MainActivity.this, "添加课程成功", Toast.LENGTH_SHORT).show();
-                            // 刷新当前周的课程数据
-                            syncDataFromServer();
-                        } else {
-                            Toast.makeText(MainActivity.this, "添加课程失败", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+            // 调用创建方法并观察结果
+            courseViewModel.insertCourse(course).observe(MainActivity.this, id -> {
+                if (id != null && id > 0) {
+                    Toast.makeText(MainActivity.this, "添加课程成功", Toast.LENGTH_SHORT).show();
+                    // 延迟刷新，等待服务器同步完成
+                    courseTableView.postDelayed(() -> {
+                        refreshCoursesForCurrentWeek();
+                    }, 500); // 延迟500毫秒
+                } else {
+                    Toast.makeText(MainActivity.this, "添加课程失败", Toast.LENGTH_SHORT).show();
                 }
             });
-            
-            // 调用创建方法
-            courseViewModel.createCourseAsync(course);
         });
         dialog.show(getSupportFragmentManager(), "add_course");
     }
@@ -541,29 +561,15 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
         
         long courseId = course.getId();
         
-        // 先重置操作结果
-        courseViewModel.resetOperationResult();
-        
-        // 使用operationResult观察操作结果
-        courseViewModel.getOperationResult().observe(MainActivity.this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean success) {
-                if (success != null) {
-                    // 移除观察者
-                    courseViewModel.getOperationResult().removeObserver(this);
-                    
-                    if (success) {
-                        Toast.makeText(MainActivity.this, "删除课程成功", Toast.LENGTH_SHORT).show();
-                        // 刷新当前周的课程数据
-                        syncDataFromServer();
-                    } else {
-                        Toast.makeText(MainActivity.this, "删除课程失败", Toast.LENGTH_SHORT).show();
-                    }
-                }
+        // 调用删除方法并观察结果
+        courseViewModel.deleteCourse(courseId).observe(MainActivity.this, rowsAffected -> {
+            if (rowsAffected != null && rowsAffected > 0) {
+                Toast.makeText(MainActivity.this, "删除课程成功", Toast.LENGTH_SHORT).show();
+                // 刷新当前周的课程数据
+                refreshCoursesForCurrentWeek();
+            } else {
+                Toast.makeText(MainActivity.this, "删除课程失败", Toast.LENGTH_SHORT).show();
             }
         });
-        
-        // 调用删除方法
-        courseViewModel.deleteCourseAsync(courseId);
     }
 }

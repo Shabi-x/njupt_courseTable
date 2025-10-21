@@ -133,149 +133,60 @@ public class CourseViewModel extends AndroidViewModel {
     /**
      * 插入课程
      * @param course 要插入的课程对象
+     * @return LiveData containing the inserted course ID
      */
-    public void insertCourse(Course course) {
+    public LiveData<Long> insertCourse(Course course) {
         isLoading.setValue(true);
-        
-        courseRepository.insertCourse(course).observeForever(id -> {
-            isLoading.setValue(false);
-            if (id > 0) {
-                Log.d(TAG, "Course inserted with ID: " + id);
-                operationResult.setValue(true);
-            } else {
-                Log.e(TAG, "Failed to insert course");
-                operationResult.setValue(false);
-            }
-        });
+        return courseRepository.insertCourse(course);
     }
 
     /**
      * 更新课程
      * @param course 要更新的课程对象
+     * @return LiveData containing rows affected
      */
-    public void updateCourse(Course course) {
+    public LiveData<Integer> updateCourse(Course course) {
         isLoading.setValue(true);
-        
-        courseRepository.updateCourse(course).observeForever(rowsAffected -> {
-            isLoading.setValue(false);
-            if (rowsAffected > 0) {
-                Log.d(TAG, "Course updated: " + course.getId());
-                operationResult.setValue(true);
-            } else {
-                Log.e(TAG, "Failed to update course: " + course.getId());
-                operationResult.setValue(false);
-            }
-        });
+        return courseRepository.updateCourse(course);
     }
 
     /**
-     * 删除课程（返回void，使用operationResult通知）
+     * 删除课程
      * @param courseId 要删除的课程ID
+     * @return LiveData containing rows affected
      */
-    public void deleteCourseAsync(long courseId) {
+    public LiveData<Integer> deleteCourse(long courseId) {
         isLoading.setValue(true);
-        
-        // 保存LiveData引用
-        LiveData<Integer> deleteLiveData = courseRepository.deleteCourse(courseId);
-        deleteLiveData.observeForever(new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer rowsAffected) {
-                // 移除观察者
-                deleteLiveData.removeObserver(this);
-                
-                isLoading.setValue(false);
-                boolean success = rowsAffected != null && rowsAffected > 0;
-                if (success) {
-                    Log.d(TAG, "Course deleted: " + courseId);
-                } else {
-                    Log.e(TAG, "Failed to delete course: " + courseId);
-                }
-                operationResult.setValue(success);
-            }
-        });
-    }
-    
-    /**
-     * 创建课程（返回void，使用operationResult通知）
-     * @param course 要创建的课程对象
-     */
-    public void createCourseAsync(Course course) {
-        isLoading.setValue(true);
-        
-        // 保存LiveData引用
-        LiveData<Long> insertLiveData = courseRepository.insertCourse(course);
-        insertLiveData.observeForever(new Observer<Long>() {
-            @Override
-            public void onChanged(Long id) {
-                // 移除观察者
-                insertLiveData.removeObserver(this);
-                
-                isLoading.setValue(false);
-                boolean success = id != null && id > 0;
-                if (success) {
-                    Log.d(TAG, "Course created with ID: " + id);
-                } else {
-                    Log.e(TAG, "Failed to create course");
-                }
-                operationResult.setValue(success);
-            }
-        });
+        return courseRepository.deleteCourse(courseId);
     }
 
     /**
      * 添加课程提醒
      * @param courseId 课程ID
+     * @return LiveData containing success status
      */
-    public void addCourseReminder(long courseId) {
+    public LiveData<Boolean> addCourseReminder(long courseId) {
         isLoading.setValue(true);
-        
-        courseRepository.addCourseReminder(courseId).observeForever(success -> {
-            isLoading.setValue(false);
-            if (success != null && success) {
-                Log.d(TAG, "Course reminder added successfully: " + courseId);
-                operationResult.setValue(true);
-            } else {
-                Log.e(TAG, "Failed to add course reminder: " + courseId);
-                operationResult.setValue(false);
-            }
-        });
+        return courseRepository.addCourseReminder(courseId);
     }
     
     /**
      * 移除课程提醒
      * @param courseId 课程ID
+     * @return LiveData containing success status
      */
-    public void removeCourseReminder(long courseId) {
+    public LiveData<Boolean> removeCourseReminder(long courseId) {
         isLoading.setValue(true);
-        
-        courseRepository.removeCourseReminder(courseId).observeForever(success -> {
-            isLoading.setValue(false);
-            if (success != null && success) {
-                Log.d(TAG, "Course reminder removed successfully: " + courseId);
-                operationResult.setValue(true);
-            } else {
-                Log.e(TAG, "Failed to remove course reminder: " + courseId);
-                operationResult.setValue(false);
-            }
-        });
+        return courseRepository.removeCourseReminder(courseId);
     }
     
     /**
      * 从服务器同步所有课程数据
+     * @return LiveData containing success status
      */
-    public void syncCoursesFromServer() {
+    public LiveData<Boolean> syncCoursesFromServer() {
         isLoading.setValue(true);
-        
-        courseRepository.syncCoursesFromServer().observeForever(success -> {
-            isLoading.setValue(false);
-            if (success != null && success) {
-                Log.d(TAG, "Courses synced from server successfully");
-                operationResult.setValue(true);
-            } else {
-                Log.e(TAG, "Failed to sync courses from server");
-                operationResult.setValue(false);
-            }
-        });
+        return courseRepository.syncCoursesFromServer();
     }
     
     /**

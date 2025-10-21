@@ -18,6 +18,8 @@ import androidx.fragment.app.DialogFragment;
 import com.example.njupt_coursetable.R;
 import com.example.njupt_coursetable.data.model.Course;
 
+import java.util.List;
+
 /**
  * 课程编辑对话框
  * 用于添加或编辑课程信息
@@ -41,6 +43,16 @@ public class CourseDialog extends DialogFragment {
     private Course course;
     
     /**
+     * 当前周的课程列表（用于冲突检测）
+     */
+    private List<Course> existingCourses;
+    
+    /**
+     * 当前周数
+     */
+    private int currentWeek = 6;
+    
+    /**
      * 回调监听器
      */
     private CourseDialogListener listener;
@@ -48,9 +60,19 @@ public class CourseDialog extends DialogFragment {
     /**
      * 构造函数
      * @param course 课程对象，如果为null则表示新建课程
+     * @param existingCourses 当前周的课程列表，用于检测时间冲突
      */
-    public CourseDialog(Course course) {
+    public CourseDialog(Course course, List<Course> existingCourses) {
         this.course = course;
+        this.existingCourses = existingCourses;
+    }
+
+    /**
+     * 设置当前周数
+     * @param week 当前周数
+     */
+    public void setCurrentWeek(int week) {
+        this.currentWeek = week;
     }
 
     /**
@@ -129,6 +151,9 @@ public class CourseDialog extends DialogFragment {
                     }
                 }
             }
+        } else {
+            // 新建模式，设置默认周数为当前周
+            editTextWeeks.setText(String.valueOf(currentWeek));
         }
 
         // 保存按钮点击事件
@@ -177,6 +202,15 @@ public class CourseDialog extends DialogFragment {
             if (startIndex >= endIndex) {
                 Toast.makeText(requireContext(), "开始时间必须早于结束时间", Toast.LENGTH_SHORT).show();
                 return;
+            }
+
+            // 如果是新建课程，检查时间冲突
+            if (course == null && existingCourses != null) {
+                boolean hasConflict = checkTimeConflict(dayOfWeek, startIndex, endIndex);
+                if (hasConflict) {
+                    Toast.makeText(requireContext(), "该时间段已有课程，请选择其他时间", Toast.LENGTH_LONG).show();
+                    return;
+                }
             }
 
             // 创建或更新课程对象
@@ -250,5 +284,53 @@ public class CourseDialog extends DialogFragment {
         builder.setTitle(course == null ? "添加课程" : "编辑课程");
 
         return builder.create();
+    }
+
+    /**
+     * 检查时间冲突
+     * @param dayOfWeek 星期几
+     * @param startIndex 开始时间索引（0-based）
+     * @param endIndex 结束时间索引（0-based）
+     * @return 是否有冲突
+     */
+    private boolean checkTimeConflict(String dayOfWeek, int startIndex, int endIndex) {
+        if (existingCourses == null || existingCourses.isEmpty()) {
+            return false;
+        }
+
+        for (Course existingCourse : existingCourses) {
+            // 检查星期是否相同
+            if (!dayOfWeek.equals(existingCourse.getDayOfWeek())) {
+                continue;
+            }
+
+            // 解析现有课程的时间段
+            String timeSlot = existingCourse.getTimeSlot();
+            if (timeSlot == null || timeSlot.isEmpty()) {
+                continue;
+            }
+
+            // 解析时间段格式："1-2节" 或 "1节"
+            String[] parts = timeSlot.replace("节", "").split("-");
+            if (parts.length == 0) {
+                continue;
+            }
+
+            try {
+                int existingStart = Integer.parseInt(parts[0].trim()) - 1; // 转换为0-based索引
+                int existingEnd = parts.length > 1 ? Integer.parseInt(parts[1].trim()) - 1 : existingStart;
+
+                // 检查时间段是否重叠
+                // 两个时间段重叠的条件: startA <= endB && endA >= startB
+                if (startIndex <= existingEnd && endIndex >= existingStart) {
+                    return true; // 有冲突
+                }
+            } catch (NumberFormatException e) {
+                // 解析失败，跳过这个课程
+                continue;
+            }
+        }
+
+        return false; // 没有冲突
     }
 }
