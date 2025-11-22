@@ -167,7 +167,7 @@
                             android:layout_height="24dp"
                             android:src="@drawable/ic_arrow_right"
                             android:contentDescription="清空"
-                            android:tint="#F44336" />
+                            app:tint="#F44336" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
