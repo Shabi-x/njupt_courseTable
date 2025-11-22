@@ -415,7 +415,17 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
     public void onCourseReminderChanged(Course course, boolean shouldReminder) {
         if (course == null) return;
 
-        String courseDate = computeCourseDateForCurrentWeek(course.getDayOfWeek()); // yyyy-MM-dd
+        // 尝试从remarks中提取真实的courseDate（从提醒列表点击时会保存）
+        String courseDate = null;
+        if (course.getRemarks() != null && course.getRemarks().startsWith("REMINDER_DATE:")) {
+            courseDate = course.getRemarks().substring("REMINDER_DATE:".length());
+        }
+        
+        // 如果没有找到保存的日期，重新计算
+        if (courseDate == null || courseDate.isEmpty()) {
+            courseDate = computeCourseDateForCurrentWeek(course.getDayOfWeek()); // yyyy-MM-dd
+        }
+        
         String startTime = mapStartTimeByTimeSlot(course.getTimeSlot()); // HH:mm:ss
 
         if (shouldReminder) {
@@ -424,7 +434,8 @@ public class MainActivity extends AppCompatActivity implements OnCourseReminderL
                 refreshUpcomingReminders();
             });
         } else {
-            courseViewModel.deleteReminderByCourseAndDate(course.getId(), courseDate).observe(this, ok -> {
+            final String finalCourseDate = courseDate; // 为了在lambda中使用
+            courseViewModel.deleteReminderByCourseAndDate(course.getId(), finalCourseDate).observe(this, ok -> {
                 Toast.makeText(this, ok != null && ok ? "提醒已移除" : "移除提醒失败", Toast.LENGTH_SHORT).show();
                 refreshUpcomingReminders();
             });

@@ -112,6 +112,21 @@ public class CourseReminderAdapter extends ListAdapter<Reminder, CourseReminderA
                         c.setLocation(r.getLocation());
                         c.setDayOfWeek(r.getDayOfWeek());
                         c.setTimeSlot(r.getTimeSlot());
+                        c.setShouldReminder(true); // 从提醒列表点击的课程，肯定已开启提醒
+                        
+                        // 设置默认值，避免显示null
+                        c.setTeacherName("未知");
+                        c.setWeekType("全周");
+                        c.setContactInfo("暂无");
+                        c.setProperty("必修");
+                        
+                        // ⭐ 关键：将Reminder的courseDate保存到remarks字段，用于删除提醒
+                        // 格式：REMINDER_DATE:yyyy-MM-dd
+                        c.setRemarks("REMINDER_DATE:" + r.getCourseDate());
+                        
+                        // 同时保存weekRange（从courseDate推算）
+                        c.setWeekRange(extractWeekFromDate(r.getCourseDate()));
+                        
                         onCourseReminderClickListener.onCourseReminderClick(c);
                     }
                 }
@@ -178,6 +193,16 @@ public class CourseReminderAdapter extends ListAdapter<Reminder, CourseReminderA
                 default:
                     return 1; // 默认周一
             }
+        }
+        
+        /**
+         * 从日期推算周数（简单返回"未知"）
+         * @param dateStr 日期字符串 yyyy-MM-dd
+         * @return 周数字符串
+         */
+        private String extractWeekFromDate(String dateStr) {
+            // 简单返回日期，供显示
+            return dateStr != null ? dateStr : "未知";
         }
     }
 
