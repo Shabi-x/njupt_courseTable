@@ -91,8 +91,9 @@ public interface CourseDao {
      * 根据周数获取课程
      * @param weekNumber 周数，如"1"
      * @return 包含该周数的课程列表
+     * 注意：使用精确匹配，避免"6"匹配到"16"的问题
      */
-    @Query("SELECT * FROM courses WHERE weekRange LIKE '%' || :weekNumber || '%' ORDER BY dayOfWeek, timeSlot")
+    @Query("SELECT * FROM courses WHERE weekRange = :weekNumber ORDER BY dayOfWeek, timeSlot")
     LiveData<List<Course>> getCoursesByWeekNumber(String weekNumber);
     
     /**

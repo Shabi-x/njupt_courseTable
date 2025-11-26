@@ -23,7 +23,7 @@ public class RetrofitClient {
     /**
      * 服务器基础URL
      */
-    private static final String BASE_URL = "http://10.0.2.2:8080/"; // Android模拟器访问本地服务器的地址
+    private static final String BASE_URL = "http://10.0.2.2:8081/"; // Android模拟器访问本地服务器的地址
     
     /**
      * Retrofit实例

@@ -2,8 +2,12 @@ package com.example.njupt_coursetable.ui.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -284,6 +288,34 @@ public class CourseDialog extends DialogFragment {
         builder.setTitle(course == null ? "添加课程" : "编辑课程");
 
         return builder.create();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            Window window = dialog.getWindow();
+            if (window != null) {
+                // 获取屏幕尺寸
+                DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+                int screenHeight = displayMetrics.heightPixels;
+                
+                // 设置对话框宽度为屏幕宽度的90%，高度最大为屏幕高度的80%
+                WindowManager.LayoutParams params = window.getAttributes();
+                params.width = (int) (displayMetrics.widthPixels * 0.9);
+                params.height = Math.min((int) (screenHeight * 0.8), dpToPx(600));
+                window.setAttributes(params);
+            }
+        }
+    }
+
+    /**
+     * 将dp转换为px
+     */
+    private int dpToPx(int dp) {
+        float density = Resources.getSystem().getDisplayMetrics().density;
+        return Math.round(dp * density);
     }
 
     /**

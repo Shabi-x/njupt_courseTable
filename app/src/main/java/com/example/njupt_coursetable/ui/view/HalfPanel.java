@@ -106,20 +106,66 @@ public class HalfPanel extends FrameLayout {
      * @param course 课程对象
      */
     public void showCourseInfo(Course course) {
-        if (course == null) return;
+        if (course == null) {
+            android.util.Log.w("HalfPanel", "showCourseInfo: course is null");
+            return;
+        }
         
+        android.util.Log.d("HalfPanel", "显示课程信息: " + course.getCourseName() + 
+            ", ID: " + course.getId() + 
+            ", 地点: " + course.getLocation() + 
+            ", 教师: " + course.getTeacherName() +
+            ", 联系方式: " + course.getContactInfo() +
+            ", 星期: " + course.getDayOfWeek() +
+            ", 时间: " + course.getTimeSlot() +
+            ", 周数: " + course.getWeekRange() +
+            ", 属性: " + course.getProperty() +
+            ", 备注: " + course.getRemarks());
+        
+        // 确保使用传入的课程对象，而不是缓存的引用
         currentCourse = course;
         
-        courseNameText.setText(course.getCourseName());
-        courseLocationText.setText(course.getLocation());
-        courseWeeksText.setText(course.getWeekRange() + " (" + course.getWeekType() + ")");
-        courseTeacherText.setText(course.getTeacherName());
-        courseContactText.setText(course.getContactInfo());
-        courseTypeText.setText(course.getProperty());
+        // 安全地获取并设置课程信息，避免null值
+        String courseName = course.getCourseName();
+        if (courseName == null || courseName.isEmpty()) {
+            courseName = "未知课程";
+        }
+        courseNameText.setText(courseName);
+        
+        String location = course.getLocation();
+        if (location == null || location.isEmpty()) {
+            location = "未知地点";
+        }
+        courseLocationText.setText(location);
+        
+        String weekRange = course.getWeekRange();
+        String weekType = course.getWeekType();
+        if (weekRange == null) weekRange = "";
+        if (weekType == null) weekType = "全周";
+        courseWeeksText.setText(weekRange + " (" + weekType + ")");
+        
+        String teacherName = course.getTeacherName();
+        if (teacherName == null || teacherName.isEmpty()) {
+            teacherName = "未知教师";
+        }
+        courseTeacherText.setText(teacherName);
+        
+        String contactInfo = course.getContactInfo();
+        if (contactInfo == null || contactInfo.isEmpty()) {
+            contactInfo = "暂无";
+        }
+        courseContactText.setText(contactInfo);
+        
+        String property = course.getProperty();
+        if (property == null || property.isEmpty()) {
+            property = "未知";
+        }
+        courseTypeText.setText(property);
         
         // 显示备注信息，如果没有备注则显示"无"
         String remarks = course.getRemarks();
-        if (remarks == null || remarks.isEmpty()) {
+        if (remarks == null || remarks.isEmpty() || remarks.startsWith("REMINDER_DATE:")) {
+            // 如果备注是REMINDER_DATE格式，不显示给用户
             remarks = "无";
         }
         courseNoteText.setText(remarks);

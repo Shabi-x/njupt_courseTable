@@ -13,8 +13,9 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     
     /**
      * 根据周数查询课程
+     * 使用精确匹配，避免"6"匹配到"16"的问题
      */
-    @Query("SELECT c FROM Course c WHERE c.weekRange LIKE %:weekNumber%")
+    @Query("SELECT c FROM Course c WHERE c.weekRange = :weekNumber")
     List<Course> findByWeekNumber(@Param("weekNumber") String weekNumber);
     
     /**

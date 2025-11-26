@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.graphics.RectF;
+
 public class CourseTableView extends View {
     // 常量定义
     private static final int WEEK_DAYS = 7; // 一周7天
@@ -92,6 +94,9 @@ public class CourseTableView extends View {
     // 课程点击检测和HalfPanel
     private Course clickedCourse;
     private HalfPanel halfPanel;
+    
+    // 存储每个课程的位置区域和对应的课程对象，确保点击检测和绘制完全一致
+    private Map<RectF, Course> courseBoundsMap = new HashMap<>();
 
     public CourseTableView(Context context) {
         super(context);
@@ -300,6 +305,9 @@ public class CourseTableView extends View {
     }
 
     private void drawCourses(Canvas canvas) {
+        // 清空课程位置映射，重新构建
+        courseBoundsMap.clear();
+        
         for (Course course : courses) {
             // 根据当前周数和课程的周类型过滤课程
             String weekType = course.getWeekType();
@@ -330,6 +338,10 @@ public class CourseTableView extends View {
             int top = headerHeight + startSlot * timeSlotHeight + padding;
             int right = left + weekDayWidth - 2 * padding;
             int bottom = headerHeight + (endSlot + 1) * timeSlotHeight - padding;
+
+            // 记录课程位置和对象的映射关系
+            RectF courseRect = new RectF(left, top, right, bottom);
+            courseBoundsMap.put(courseRect, course);
 
             // 设置课程颜色
             int colorIndex = getColorIndexForCourse(course.getCourseName());
@@ -501,45 +513,57 @@ public class CourseTableView extends View {
         float y = event.getY();
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            // 检查是否点击了课程区域
-            for (Course course : courses) {
-                // 应用与drawCourses方法相同的单双周过滤逻辑
-                String weekType = course.getWeekType();
-                if (weekType != null) {
-                    if ("单周".equals(weekType) && currentWeek % 2 == 0) {
-                        continue; // 单周课程，但当前是双周，跳过
-                    }
-                    if ("双周".equals(weekType) && currentWeek % 2 == 1) {
-                        continue; // 双周课程，但当前是单周，跳过
-                    }
-                    // "全周"课程总是显示
-                }
+            // 直接从绘制时记录的课程位置映射中查找
+            // 这样可以确保点击检测和绘制完全一致
+            Course bestMatch = null;
+            double minDistance = Double.MAX_VALUE;
+            
+            android.util.Log.d("CourseTableView", "开始点击检测，点击位置: (" + x + ", " + y + ")");
+            android.util.Log.d("CourseTableView", "课程位置映射大小: " + courseBoundsMap.size());
+            
+            // 遍历所有记录的课程位置
+            for (Map.Entry<RectF, Course> entry : courseBoundsMap.entrySet()) {
+                RectF rect = entry.getKey();
+                Course course = entry.getValue();
                 
-                int dayOfWeek = getDayOfWeekIndex(course.getDayOfWeek());
-                if (dayOfWeek < 0 || dayOfWeek >= WEEK_DAYS) continue;
-
-                int[] timeSlots = getTimeSlotRange(course.getTimeSlot());
-                if (timeSlots == null || timeSlots.length != 2) continue;
-
-                int startSlot = timeSlots[0] - 1;
-                int endSlot = timeSlots[1] - 1;
-
-                if (startSlot < 0 || endSlot >= MAX_COURSE_SLOTS) continue;
-
-                int left = timeLabelWidth + dayOfWeek * weekDayWidth + padding;
-                int top = headerHeight + startSlot * timeSlotHeight + padding;
-                int right = left + weekDayWidth - 2 * padding;
-                int bottom = headerHeight + (endSlot + 1) * timeSlotHeight - padding;
-
-                if (x >= left && x <= right && y >= top && y <= bottom) {
-                    // 点击了课程
-                    if (onCourseClickListener != null) {
-                        onCourseClickListener.onCourseClick(course);
+                // 检查点击是否在课程区域内
+                if (rect.contains(x, y)) {
+                    // 计算点击位置到课程中心的距离，选择距离最近的
+                    float centerX = rect.centerX();
+                    float centerY = rect.centerY();
+                    double distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                    
+                    android.util.Log.d("CourseTableView", "匹配到课程: " + course.getCourseName() + 
+                        " (ID: " + course.getId() + 
+                        ", 星期: " + course.getDayOfWeek() + 
+                        ", 时间: " + course.getTimeSlot() + 
+                        ", 区域: [" + rect.left + "," + rect.top + "," + rect.right + "," + rect.bottom + "]" +
+                        ", 距离: " + distance + ")");
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        bestMatch = course;
                     }
-                    // 显示HalfPanel
-                    showCourseDetails(course);
-                    return true;
                 }
+            }
+            
+            // 如果找到了匹配的课程，显示详情
+            if (bestMatch != null) {
+                android.util.Log.d("CourseTableView", "最终选择课程: " + bestMatch.getCourseName() + 
+                    " (ID: " + bestMatch.getId() + 
+                    ", 星期: " + bestMatch.getDayOfWeek() + 
+                    ", 时间: " + bestMatch.getTimeSlot() + 
+                    ", 教师: " + bestMatch.getTeacherName() +
+                    ", 地点: " + bestMatch.getLocation() + ")");
+                // 点击了课程
+                if (onCourseClickListener != null) {
+                    onCourseClickListener.onCourseClick(bestMatch);
+                }
+                // 显示HalfPanel，直接传递课程对象
+                showCourseDetails(bestMatch);
+                return true;
+            } else {
+                android.util.Log.d("CourseTableView", "未找到匹配的课程");
             }
         }
 
@@ -547,9 +571,24 @@ public class CourseTableView extends View {
     }
     
     private void showCourseDetails(Course course) {
-        if (halfPanel != null) {
-            clickedCourse = course;
-            halfPanel.showCourseInfo(course);
+        if (halfPanel != null && course != null) {
+            // 创建课程对象的副本，避免对象被意外修改
+            Course courseCopy = new Course();
+            courseCopy.setId(course.getId());
+            courseCopy.setCourseName(course.getCourseName());
+            courseCopy.setLocation(course.getLocation());
+            courseCopy.setWeekRange(course.getWeekRange());
+            courseCopy.setDayOfWeek(course.getDayOfWeek());
+            courseCopy.setTimeSlot(course.getTimeSlot());
+            courseCopy.setTeacherName(course.getTeacherName());
+            courseCopy.setContactInfo(course.getContactInfo());
+            courseCopy.setProperty(course.getProperty());
+            courseCopy.setRemarks(course.getRemarks());
+            courseCopy.setWeekType(course.getWeekType());
+            courseCopy.setShouldReminder(course.isShouldReminder());
+            
+            clickedCourse = courseCopy;
+            halfPanel.showCourseInfo(courseCopy);
         }
     }
 
